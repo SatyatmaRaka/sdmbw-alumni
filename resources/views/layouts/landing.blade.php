@@ -173,6 +173,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('landing.index') }}">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a></li>
                     @guest
                         <li class="nav-item"><a class="nav-link px-3" href="{{ route('login') }}">Masuk</a></li>
                         <li class="nav-item"><a href="{{ route('register') }}" class="btn btn-navbar-cream">Daftar Sekarang</a></li>
@@ -199,6 +200,7 @@
                     <h5>Navigasi</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="{{ route('landing.index') }}">Beranda</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a></li>
                         <li><a href="{{ route('login') }}">Login</a></li>
                     </ul>
                 </div>

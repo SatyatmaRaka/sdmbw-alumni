@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Public\AlumniPublicController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\AngkatanController;
 use App\Http\Controllers\Admin\AlumniController as AdminAlumni;
@@ -20,6 +21,8 @@ use App\Http\Controllers\Alumni\RiwayatController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', [LandingController::class, 'index'])->name('landing.index');
+Route::get('/direktori-alumni', [AlumniPublicController::class, 'direktori'])->name('public.direktori');
+Route::get('/direktori-alumni/{alumni}', [AlumniPublicController::class, 'show'])->name('public.profil');
 
 /*
 |--------------------------------------------------------------------------
