@@ -58,9 +58,9 @@
                                 name="status"
                                 required>
                             <option value="">-- Pilih Status --</option>
-                            <option value="BELUM_LULUS"
-                                    {{ old('status', $angkatan->status) == 'BELUM_LULUS' ? 'selected' : '' }}>
-                                BELUM LULUS
+                            <option value="AKTIF"
+                                    {{ old('status', $angkatan->status) == 'AKTIF' ? 'selected' : '' }}>
+                                AKTIF
                             </option>
                             <option value="LULUS"
                                     {{ old('status', $angkatan->status) == 'LULUS' ? 'selected' : '' }}>
