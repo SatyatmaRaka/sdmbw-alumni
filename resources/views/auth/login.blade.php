@@ -7,10 +7,11 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
+            /* Warna TETAP SAMA sesuai permintaan */
             --color-bg: #EAE0CF;
             --color-secondary: #94B4C1;
             --color-accent: #547792;
@@ -27,126 +28,229 @@
             padding: 20px;
         }
 
-        .login-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow: hidden;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .login-header {
-            background: var(--color-header);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .login-header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 24px;
-            margin: 0 0 10px 0;
-            letter-spacing: 1px;
-        }
-
-        .login-body {
-            padding: 30px;
-        }
-
-        .btn-login {
-            background: var(--color-accent);
-            border: none;
-            color: white;
-            padding: 12px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            background: var(--color-header);
-            color: white;
-            transform: translateY(-2px);
-        }
-
+        /* --- Tombol Kembali --- */
         .btn-back-home {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+            position: absolute;
+            top: 25px;
+            left: 25px;
             z-index: 1000;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             color: var(--color-header);
             padding: 10px 20px;
-            border-radius: 10px;
+            border-radius: 50px;
             text-decoration: none;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
         .btn-back-home:hover {
             background: var(--color-header);
             color: white;
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
-        /* Styling tambahan untuk alert agar lebih rapi */
+        /* --- Card Styling --- */
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(33, 52, 72, 0.15); /* Bayangan lebih halus dengan tone biru gelap */
+            overflow: hidden;
+            max-width: 420px;
+            width: 100%;
+            border: none;
+        }
+
+        .login-header {
+            background: var(--color-header);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Hiasan lengkungan kecil di bawah header (opsional, agar tidak kaku) */
+        .login-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: var(--color-header) transparent transparent transparent;
+            z-index: 1;
+        }
+
+        .login-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 10px 0 5px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 5px;
+            color: var(--color-secondary);
+        }
+
+        .login-body {
+            padding: 40px 40px 30px 40px;
+        }
+
+        /* --- Form Inputs dengan Icon --- */
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-right: none;
+            color: var(--color-accent);
+        }
+
+        .form-control {
+            border: 1px solid #dee2e6;
+            border-left: none;
+            padding: 12px;
+            background-color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        /* Efek Focus: Border warna accent & shadow */
+        .input-group:focus-within .input-group-text,
+        .input-group:focus-within .form-control {
+            border-color: var(--color-accent);
+            background-color: white;
+            box-shadow: none;
+        }
+
+        .input-group:focus-within {
+            box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.15);
+            border-radius: 0.375rem;
+        }
+
+        .form-label {
+            color: var(--color-header);
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        /* --- Buttons --- */
+        .btn-login {
+            background: var(--color-accent);
+            border: none;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.5px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(84, 119, 146, 0.3);
+        }
+
+        .btn-login:hover {
+            background: var(--color-header);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(33, 52, 72, 0.4);
+        }
+
+        /* --- Links --- */
+        .link-register {
+            color: var(--color-accent);
+            font-weight: 700;
+            transition: color 0.2s;
+        }
+        .link-register:hover {
+            color: var(--color-header);
+            text-decoration: underline !important;
+        }
+
+        .link-help {
+            color: #6c757d;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .link-help:hover {
+            color: var(--color-accent);
+        }
+
+        /* --- Alerts --- */
         .alert {
             font-size: 0.9rem;
             border-radius: 10px;
             border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        /* Input focus styling */
-        .form-control:focus {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 0.2rem rgba(84, 119, 146, 0.25);
-        }
-
-        /* Link styling */
-        a {
-            transition: all 0.3s;
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .login-card {
+                max-width: 100%;
+                box-shadow: none; /* Flat pada mobile agar ringan */
+                background: rgba(255,255,255,0.95);
+            }
+            .btn-back-home {
+                position: fixed; /* Tetap fixed di mobile */
+                top: 15px;
+                left: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <a href="{{ route('landing.index') }}" class="btn-back-home">
-        <i class="bi bi-arrow-left"></i>
-        <span>Beranda</span>
+        <i class="bi bi-arrow-left me-1"></i> Beranda
     </a>
 
     <div class="login-card">
         <div class="login-header">
+            <i class="bi bi-mortarboard-fill login-icon"></i>
             <h1>SISTEM ALUMNI</h1>
             <p class="mb-0">SD Muhammadiyah Birrul Walidain Kudus</p>
         </div>
 
         <div class="login-body">
 
-            {{-- 1. Alert Success (Setelah Register atau Reset Password) --}}
+            {{-- 1. Alert Success --}}
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    {{ session('success') }}
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <div>{{ session('success') }}</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
-            {{-- 2. Alert Error/Warning (Gagal Login atau Belum Aktif) --}}
-            {{-- Kita prioritaskan pesan dari controller (is_active check) --}}
+            {{-- 2. Alert Error --}}
             @if($errors->has('username'))
                 <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    {{ $errors->first('username') }}
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <div>{{ $errors->first('username') }}</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @elseif(session('error'))
                 <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                    <i class="bi bi-x-circle-fill me-2"></i>
-                    {{ session('error') }}
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-x-circle-fill me-2 fs-5"></i>
+                        <div>{{ session('error') }}</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -155,25 +259,31 @@
                 @csrf
 
                 <div class="mb-3">
-                    <label for="username" class="form-label text-secondary small fw-bold">USERNAME</label>
-                    <input type="text"
-                           class="form-control @error('username') is-invalid @enderror"
-                           id="username"
-                           name="username"
-                           value="{{ old('username') }}"
-                           placeholder="Masukkan username"
-                           required
-                           autofocus>
+                    <label for="username" class="form-label fw-bold">USERNAME</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text"
+                               class="form-control @error('username') is-invalid @enderror"
+                               id="username"
+                               name="username"
+                               value="{{ old('username') }}"
+                               placeholder="Masukkan username"
+                               required
+                               autofocus>
+                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label text-secondary small fw-bold">PASSWORD</label>
-                    <input type="password"
-                           class="form-control @error('password') is-invalid @enderror"
-                           id="password"
-                           name="password"
-                           placeholder="••••••••"
-                           required>
+                    <label for="password" class="form-label fw-bold">PASSWORD</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               id="password"
+                               name="password"
+                               placeholder="••••••••"
+                               required>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -183,7 +293,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-login w-100 rounded-pill">
+                <button type="submit" class="btn btn-login w-100">
                     Masuk Sekarang <i class="bi bi-box-arrow-in-right ms-2"></i>
                 </button>
             </form>

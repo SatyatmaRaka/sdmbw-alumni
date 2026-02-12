@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
@@ -41,8 +42,19 @@ class LoginController extends Controller
             'password.required' => 'Password wajib diisi',
         ]);
 
+        // Cek apakah username ada di database
+        $user = User::where('username', $credentials['username'])->first();
+
+        // Jika username tidak ditemukan
+        if (!$user) {
+            return back()->withErrors([
+                'username' => 'Username tidak terdaftar. Silahkan daftar terlebih dahulu sebagai Alumni.',
+            ])->onlyInput('username');
+        }
+
         // Proses login
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            /** @var \App\Models\User $user */
             $user = Auth::user();
 
             // Validasi status aktif untuk alumni
@@ -63,9 +75,9 @@ class LoginController extends Controller
             return $this->redirectBasedOnRole();
         }
 
-        // Jika username atau password salah
+        // Jika password salah
         return back()->withErrors([
-            'username' => 'Username atau password salah.',
+            'username' => 'Password yang Anda masukkan salah. Silahkan coba lagi.',
         ])->onlyInput('username');
     }
 

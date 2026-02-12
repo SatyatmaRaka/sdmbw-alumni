@@ -12,6 +12,7 @@
 
     <style>
         :root {
+            /* Warna TETAP SAMA sesuai permintaan */
             --color-primary: #213448;
             --color-primary-light: #2d4a65;
             --color-primary-dark: #152230;
@@ -31,130 +32,187 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            color: #333;
         }
 
-        /* Navbar */
+        /* --- Navbar --- */
         .navbar-custom {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-            padding: 1rem 0;
+            padding: 0.8rem 0;
             border-bottom: 3px solid var(--color-accent);
-            box-shadow: 0 2px 10px rgba(33, 52, 72, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
         .navbar-custom .navbar-brand {
             color: #ffffff !important;
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
-            font-size: 1.3rem;
-            transition: all 0.3s ease;
-        }
-
-        .navbar-custom .navbar-brand:hover {
-            transform: scale(1.05);
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
         }
 
         .navbar-custom .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
             font-weight: 500;
-            padding: 0.5rem 1rem !important;
+            font-size: 0.95rem;
+            margin: 0 5px;
+            padding: 0.6rem 1rem !important;
             border-radius: 8px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .navbar-custom .nav-link:hover {
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-item.active .nav-link {
             color: var(--color-accent) !important;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .btn-navbar-cream {
             background-color: var(--color-accent);
             color: var(--color-primary-dark) !important;
             font-weight: 600;
-            border-radius: 8px;
+            font-size: 0.9rem;
+            border-radius: 50px; /* Lebih rounded agar modern */
             padding: 0.6rem 1.5rem !important;
-            border: none;
-            text-decoration: none;
+            border: 2px solid transparent;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(234, 224, 207, 0.3);
+            box-shadow: 0 4px 10px rgba(234, 224, 207, 0.2);
         }
 
         .btn-navbar-cream:hover {
-            background-color: #d4cab5;
+            background-color: transparent;
+            border-color: var(--color-accent);
+            color: var(--color-accent) !important;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(234, 224, 207, 0.5);
+            box-shadow: 0 6px 15px rgba(234, 224, 207, 0.3);
         }
 
         .navbar-toggler {
-            border: none;
-            padding: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.4rem 0.6rem;
         }
 
-        .navbar-toggler:focus {
-            box-shadow: none;
-        }
-
-        /* Footer */
+        /* --- Footer --- */
         .footer {
-            background: linear-gradient(135deg, var(--color-primary-dark) 0%, #0a1420 100%);
+            background: linear-gradient(180deg, var(--color-primary-dark) 0%, #0a1420 100%);
             color: #ffffff !important;
-            padding: 4rem 0 0 0;
+            padding: 5rem 0 0 0;
             margin-top: auto;
-            border-top: 3px solid var(--color-accent);
+            border-top: 4px solid var(--color-accent);
+        }
+
+        .footer-logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
         }
 
         .footer h5 {
             color: var(--color-accent) !important;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
             font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1.8rem;
+            position: relative;
+            padding-bottom: 10px;
         }
 
-        .footer p, .footer li {
-            color: #d1d8df !important;
-            line-height: 1.8;
+        /* Garis bawah kecil pada judul footer */
+        .footer h5::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--color-accent);
         }
 
-        .footer a {
-            color: #d1d8df;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-
-        .footer a:hover {
-            color: var(--color-accent);
-            transform: translateX(5px);
-        }
-
-        .footer ul {
-            padding-left: 0;
+        .footer p {
+            color: #b0b9c1 !important;
+            font-size: 0.95rem;
+            line-height: 1.7;
         }
 
         .footer ul li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .footer ul li a {
+            color: #b0b9c1 !important;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .footer ul li a:hover {
+            color: var(--color-accent) !important;
+            padding-left: 8px;
+        }
+
+        .contact-icon {
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-accent);
+            margin-right: 12px;
+            flex-shrink: 0;
         }
 
         .footer-bottom {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             padding: 1.5rem 0;
-            margin-top: 3rem;
-            border-top: 1px solid rgba(234, 224, 207, 0.1);
+            margin-top: 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .footer-bottom p {
             margin: 0;
-            opacity: 0.8;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
         }
 
-        /* Responsive */
+        /* --- Global Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 10px;
+        }
+
+        /* --- Responsive --- */
         @media (max-width: 991px) {
             .navbar-collapse {
-                background: rgba(0, 0, 0, 0.1);
-                padding: 1rem;
-                border-radius: 10px;
+                background: var(--color-primary-dark);
+                padding: 1.5rem;
+                border-radius: 15px;
                 margin-top: 1rem;
+                border: 1px solid rgba(234, 224, 207, 0.2);
             }
-            .btn-navbar-cream { width: 100%; margin-top: 0.5rem; }
+            .nav-link {
+                padding: 0.8rem 1rem !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .btn-navbar-cream {
+                width: 100%;
+                margin-top: 1rem;
+                text-align: center;
+            }
         }
     </style>
     @stack('styles')
@@ -167,18 +225,33 @@
                 <i class="bi bi-mortarboard-fill me-2 fs-3" style="color: var(--color-accent)"></i>
                 <span>ALUMNI SDMBW</span>
             </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list text-white fs-1"></i>
+                <span class="bi bi-list text-white fs-2"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ route('landing.index') }}">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('landing.index') }}">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a>
+                    </li>
+
                     @guest
-                        <li class="nav-item"><a class="nav-link px-3" href="{{ route('login') }}">Masuk</a></li>
-                        <li class="nav-item"><a href="{{ route('register') }}" class="btn btn-navbar-cream">Daftar Sekarang</a></li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="nav-link px-3" href="{{ route('login') }}">Masuk</a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <a href="{{ route('register') }}" class="btn btn-navbar-cream">Daftar Sekarang</a>
+                        </li>
                     @else
-                        <li class="nav-item"><a class="nav-link" href="{{ route('alumni.dashboard') }}">Dashboard</a></li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="nav-link d-flex align-items-center" href="{{ route('alumni.dashboard') }}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
                     @endguest
                 </ul>
             </div>
@@ -191,37 +264,50 @@
 
     <footer class="footer">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <h5>Sistem Alumni</h5>
-                    <p>Sebagai wadah resmi alumni SD Muhammadiyah Birrul Walidain Kudus, platform ini bertujuan mempererat silaturahmi serta mendorong kontribusi positif antaralumni.</p>
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-12">
+                    <div class="footer-logo-text">
+                        <i class="bi bi-mortarboard-fill me-2" style="color: var(--color-accent)"></i>
+                        ALUMNI SDMBW
+                    </div>
+                    <p>Wadah resmi silaturahmi alumni SD Muhammadiyah Birrul Walidain Kudus. Bersama membangun jejaring, berbagi inspirasi, dan berkontribusi untuk almamater tercinta.</p>
                 </div>
-                <div class="col-lg-2 ms-lg-auto">
+
+                <div class="col-lg-2 col-md-4 ms-lg-auto">
                     <h5>Navigasi</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ route('landing.index') }}">Beranda</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a></li>
-                        <li><a href="{{ route('login') }}">Login</a></li>
+                        <li><a href="{{ route('landing.index') }}"><i class="bi bi-chevron-right me-1 small"></i> Beranda</a></li>
+                        <li><a href="{{ route('public.direktori') }}"><i class="bi bi-chevron-right me-1 small"></i> Direktori Alumni</a></li>
+                        <li><a href="{{ route('login') }}"><i class="bi bi-chevron-right me-1 small"></i> Login</a></li>
+                        <li><a href="{{ route('register') }}"><i class="bi bi-chevron-right me-1 small"></i> Registrasi</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-4">
-                    <h5>Kontak Kami</h5>
+
+                <div class="col-lg-4 col-md-8">
+                    <h5>Hubungi Kami</h5>
                     <ul class="list-unstyled">
-                        <li class="d-flex mb-3">
-                            <i class="bi bi-geo-alt-fill me-3" style="color: var(--color-accent)"></i>
-                            <span>Jl. HOS Cokroaminoto, Ds. Mlatinorowito, Gg. 10, RT 03 RW 09, Kab. Kudus, Provinsi Jawa Tengah.</span>
+                        <li class="d-flex align-items-start mb-3">
+                            <div class="contact-icon">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <span>Jl. HOS Cokroaminoto, Ds. Mlatinorowito, Gg. 10, RT 03 RW 09, Kab. Kudus, Jawa Tengah.</span>
                         </li>
-                        <li class="d-flex mb-3">
-                            <i class="bi bi-telephone-fill me-3" style="color: var(--color-accent)"></i>
-                            <span>(0812) 48076886 / (0291) 4248302 </span>
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="contact-icon">
+                                <i class="bi bi-telephone-fill"></i>
+                            </div>
+                            <span>(0812) 48076886 / (0291) 4248302</span>
                         </li>
-                        <li class="d-flex mb-3">
-                            <i class="bi bi-envelope-fill me-3" style="color: var(--color-accent)"></i>
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="contact-icon">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
                             <span>info@sdmbwkudus.sch.id</span>
                         </li>
                     </ul>
                 </div>
             </div>
+
             <div class="footer-bottom text-center">
                 <p class="mb-0">&copy; {{ date('Y') }} SD Muhammadiyah Birrul Walidain Kudus.</p>
             </div>
@@ -229,5 +315,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

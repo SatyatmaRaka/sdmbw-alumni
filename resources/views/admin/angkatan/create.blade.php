@@ -21,13 +21,13 @@
                             Nama Angkatan <span class="text-danger">*</span>
                         </label>
                         <input type="text"
-                               class="form-control bg-light @error('nama_angkatan') is-invalid @enderror"
-                               id="nama_angkatan"
-                               name="nama_angkatan"
-                               value="{{ old('nama_angkatan', 'Angkatan ' . $nextNumber) }}"
-                               placeholder="Angkatan {{ $nextNumber }}"
-                               readonly
-                               required>
+                                class="form-control bg-light @error('nama_angkatan') is-invalid @enderror"
+                                id="nama_angkatan"
+                                name="nama_angkatan"
+                                value="{{ old('nama_angkatan', 'Angkatan ' . $nextNumber) }}"
+                                placeholder="Angkatan {{ $nextNumber }}"
+                                readonly
+                                required>
                         @error('nama_angkatan')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

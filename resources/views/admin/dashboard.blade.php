@@ -127,9 +127,9 @@
                             @endphp
                             @if($fotoUtama)
                                 <img src="{{ asset('storage/' . $fotoUtama->path_file) }}"
-                                     class="img-fluid"
-                                     style="width: 40px; height: 40px; object-fit: cover;"
-                                     alt="Foto {{ $alumni->nama_lengkap }}">
+                                        class="img-fluid"
+                                        style="width: 40px; height: 40px; object-fit: cover;"
+                                        alt="Foto {{ $alumni->nama_lengkap }}">
                             @else
                                 <i class="bi bi-person text-secondary fs-5"></i>
                             @endif
