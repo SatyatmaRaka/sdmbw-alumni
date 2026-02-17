@@ -9,10 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
     <style>
         :root {
-            /* Warna TETAP SAMA sesuai permintaan */
+            /* Warna Tema */
             --color-primary: #213448;
             --color-primary-light: #2d4a65;
             --color-primary-dark: #152230;
@@ -73,7 +74,7 @@
             color: var(--color-primary-dark) !important;
             font-weight: 600;
             font-size: 0.9rem;
-            border-radius: 50px; /* Lebih rounded agar modern */
+            border-radius: 50px;
             padding: 0.6rem 1.5rem !important;
             border: 2px solid transparent;
             transition: all 0.3s ease;
@@ -314,7 +315,93 @@
         </div>
     </footer>
 
+    {{-- Toast Container --}}
+    <div id="toast-container" class="toast-container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{-- Toast Notification Script --}}
+    <script>
+    function showToast(message, type = 'success', duration = 3000) {
+        const container = document.getElementById('toast-container');
+
+        const icons = {
+            success: '<i class="bi bi-check-circle-fill"></i>',
+            error: '<i class="bi bi-x-circle-fill"></i>',
+            warning: '<i class="bi bi-exclamation-triangle-fill"></i>',
+            info: '<i class="bi bi-info-circle-fill"></i>'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon">${icons[type] || icons.success}</span>
+            <div class="toast-content">${message}</div>
+            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => toast.classList.add('show'), 100);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // Auto show Laravel session messages
+    @if(session('success'))
+        showToast("{{ session('success') }}", 'success');
+    @endif
+
+    @if(session('error'))
+        showToast("{{ session('error') }}", 'error');
+    @endif
+
+    @if(session('warning'))
+        showToast("{{ session('warning') }}", 'warning');
+    @endif
+
+    @if(session('info'))
+        showToast("{{ session('info') }}", 'info');
+    @endif
+
+    @if($errors->any())
+        @foreach($errors->all() as $error)
+            showToast("{{ $error }}", 'error', 5000);
+        @endforeach
+    @endif
+    </script>
+
+    {{-- Loading State Script --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+
+                if (submitBtn && !submitBtn.classList.contains('btn-loading')) {
+                    submitBtn.classList.add('btn-loading');
+                    submitBtn.disabled = true;
+
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.setAttribute('data-original-text', originalText);
+
+                    const icon = submitBtn.querySelector('i');
+                    if (icon) {
+                        submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise spinning me-2"></i> Memproses...';
+                    } else {
+                        submitBtn.innerHTML = 'Memproses...';
+                    }
+                }
+            });
+        });
+    });
+    </script>
+
     @stack('scripts')
 </body>
 </html>

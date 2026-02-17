@@ -41,13 +41,15 @@ class ProfileController extends Controller
             return redirect()->route('login')->with('error', 'Data alumni tidak ditemukan.');
         }
 
+        // VALIDATION - Laravel validator handles mime type WITHOUT finfo extension
+        // It uses getClientMimeType() which gets mime from filename extension
         $request->validate([
             'alamat' => 'required|string',
             'no_hp' => 'required|numeric|digits_between:10,14',
             'show_no_hp' => 'nullable|in:0,1',
             'email' => 'nullable|email|max:255',
-            'harapan' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'harapan' => 'nullable|string|max:500',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048', // Safe without finfo
             'pendidikan.*.jenjang' => 'nullable|string|max:50',
             'pendidikan.*.nama_instansi' => 'nullable|string|max:255',
             'pendidikan.*.program_studi' => 'nullable|string|max:255',
@@ -62,6 +64,7 @@ class ProfileController extends Controller
             'no_hp.required' => 'Nomor HP wajib diisi',
             'no_hp.numeric' => 'Nomor HP harus berupa angka',
             'no_hp.digits_between' => 'Nomor HP harus 10-14 digit',
+            'harapan.max' => 'Pesan & Harapan maksimal 500 karakter',
             'foto.image' => 'File harus berupa gambar',
             'foto.mimes' => 'Format gambar harus JPG, JPEG, PNG, atau WEBP',
             'foto.max' => 'Ukuran foto maksimal 2MB',
@@ -84,16 +87,24 @@ class ProfileController extends Controller
             }
 
             // 3. Handle Foto Profil
+            // NOTE: extension() method DOES NOT use finfo - it gets extension from filename
+            // This is safe for servers without finfo extension
             if ($request->hasFile('foto')) {
+                // Delete old photo if exists
                 $fotoLama = $alumni->fotos()->where('is_main', true)->first();
                 if ($fotoLama) {
                     Storage::disk('public')->delete($fotoLama->path_file);
                     $fotoLama->delete();
                 }
 
-                $filename = 'alumni_' . $alumni->id . '_' . time() . '.' . $request->foto->extension();
+                // Generate filename using extension() - NO finfo needed
+                $extension = $request->foto->extension();
+                $filename = 'alumni_' . $alumni->id . '_' . time() . '.' . $extension;
+
+                // Store file - NO finfo needed
                 $path = $request->foto->storeAs('foto_alumni', $filename, 'public');
 
+                // Save to database
                 $alumni->fotos()->create([
                     'path_file' => $path,
                     'kategori' => 'profil',
@@ -153,6 +164,7 @@ class ProfileController extends Controller
 
             return redirect()->route('alumni.dashboard')
                 ->with('success', 'Profil berhasil diperbarui!');
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();

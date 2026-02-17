@@ -94,7 +94,7 @@
                         </td>
                         <td>{{ $item['nama_lengkap'] }}</td>
                         <td class="text-muted">{{ $item['username'] }}</td>
-                        <td>{{ $item['no_hp'] }}</td>
+                        <td>{{ \App\Helpers\FormatHelper::phone($item['no_hp'] ?? null) }}</td>
                         <td class="small">{{ $item['pendidikan_terakhir'] }}</td>
                         <td class="small">{{ $item['pekerjaan_terkini'] }}</td>
                         <td class="text-center">

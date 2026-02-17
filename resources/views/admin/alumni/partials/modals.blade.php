@@ -123,7 +123,7 @@
                     @csrf
                     @method('DELETE')
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger fw-bold shadow-sm py-2" onclick="return confirm('Data akan dihapus permanen. Anda YAKIN?')">
+                        <button type="submit" class="btn btn-danger fw-bold shadow-sm py-2">
                             <i class="bi bi-trash-fill me-1"></i>Ya, Hapus Permanen
                         </button>
                         <button type="button" class="btn btn-light fw-bold text-muted" data-bs-dismiss="modal">

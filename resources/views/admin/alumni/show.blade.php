@@ -43,7 +43,7 @@
                 <div class="row mb-3">
                     <div class="col-md-4 text-muted">No. HP / WhatsApp</div>
                     <div class="col-md-8">
-                        {{ $alumni->no_hp ?? '-' }}
+                        {{ \App\Helpers\FormatHelper::phone($alumni->no_hp) }}
                         @if($alumni->no_hp && $alumni->show_no_hp)
                             <span class="badge bg-success ms-2">
                                 <i class="bi bi-eye"></i> Public
@@ -331,14 +331,11 @@
                     <i class="bi bi-pencil-square"></i> Edit Data
                 </a>
 
-                <!-- Hapus -->
-                <form action="{{ route('admin.alumni.destroy', $alumni) }}" method="POST" class="mb-2">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Yakin ingin menghapus alumni ini secara permanen?')">
-                        <i class="bi bi-trash"></i> Hapus Alumni
-                    </button>
-                </form>
+                <!-- Hapus - IMPROVED dengan Modal -->
+                <button type="button" class="btn btn-outline-danger w-100 mb-2"
+                        data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="bi bi-trash"></i> Hapus Alumni
+                </button>
 
                 <hr>
 
@@ -349,4 +346,52 @@
         </div>
     </div>
 </div>
+
+{{-- ===== DELETE CONFIRMATION MODAL ===== --}}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-danger text-white border-0 py-3">
+                <h6 class="modal-title fw-bold mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Konfirmasi Hapus Alumni
+                </h6>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 70px; height: 70px;">
+                    <i class="bi bi-trash3-fill text-danger" style="font-size: 2rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Hapus data alumni ini?</h6>
+                <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                    <strong>{{ $alumni->nama_lengkap }}</strong>
+                </p>
+                <div class="alert alert-danger border-0 text-start small mt-3 mb-0">
+                    <strong><i class="bi bi-exclamation-circle me-1"></i>Data yang akan dihapus:</strong>
+                    <ul class="mb-0 mt-1 ps-3">
+                        <li>Data profil &amp; akun alumni</li>
+                        <li>Riwayat pendidikan</li>
+                        <li>Riwayat pekerjaan</li>
+                        <li>Foto profil</li>
+                    </ul>
+                    <strong class="d-block mt-2 text-danger">⚠️ Tindakan ini TIDAK DAPAT dibatalkan!</strong>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
+                <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i> Batal
+                </button>
+                <form action="{{ route('admin.alumni.destroy', $alumni) }}" method="POST" class="flex-fill">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash3 me-1"></i> Ya, Hapus Sekarang
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- ===== END DELETE MODAL ===== --}}
+
 @endsection

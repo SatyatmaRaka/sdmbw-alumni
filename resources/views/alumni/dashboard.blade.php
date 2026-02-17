@@ -67,6 +67,82 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- ===== PROFILE COMPLETION PROGRESS BAR ===== --}}
+                @php
+                    $score = 0;
+                    $items = [];
+
+                    // Biodata dasar (40 poin)
+                    if (!empty($alumni->alamat))  { $score += 10; $items['Alamat'] = true;  } else { $items['Alamat'] = false; }
+                    if (!empty($alumni->no_hp))   { $score += 10; $items['No HP'] = true;   } else { $items['No HP'] = false; }
+                    if (!empty($alumni->email))   { $score += 10; $items['Email'] = true;   } else { $items['Email'] = false; }
+                    if (!empty($alumni->harapan)) { $score += 10; $items['Harapan'] = true; } else { $items['Harapan'] = false; }
+
+                    // Foto (15 poin)
+                    $hasFoto = $alumni->fotos->where('is_main', true)->first();
+                    if ($hasFoto) { $score += 15; $items['Foto Profil'] = true; } else { $items['Foto Profil'] = false; }
+
+                    // Pendidikan (30 poin)
+                    if ($alumni->pendidikan->count() > 0) { $score += 30; $items['Riwayat Pendidikan'] = true; } else { $items['Riwayat Pendidikan'] = false; }
+
+                    // Pekerjaan (15 poin)
+                    if ($alumni->pekerjaan->count() > 0) { $score += 15; $items['Riwayat Pekerjaan'] = true; } else { $items['Riwayat Pekerjaan'] = false; }
+
+                    // Warna & pesan berdasarkan score
+                    if ($score >= 80) {
+                        $barColor = 'bg-success';
+                        $message = '🎉 Profil Anda sudah sangat lengkap!';
+                        $messageClass = 'text-success';
+                    } elseif ($score >= 50) {
+                        $barColor = 'bg-warning';
+                        $message = '💪 Hampir lengkap! Tambahkan beberapa data lagi.';
+                        $messageClass = 'text-warning';
+                    } else {
+                        $barColor = 'bg-danger';
+                        $message = '📝 Profil belum lengkap. Segera lengkapi data Anda.';
+                        $messageClass = 'text-danger';
+                    }
+                @endphp
+
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="fw-bold text-secondary">Kelengkapan Profil</small>
+                        <small class="fw-bold {{ $messageClass }}">{{ $score }}%</small>
+                    </div>
+                    <div class="progress mb-2" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar {{ $barColor }} progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             style="width: {{ $score }}%; border-radius: 10px;"
+                             aria-valuenow="{{ $score }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="{{ $messageClass }} d-block mb-3">{{ $message }}</small>
+
+                    {{-- Detail Items --}}
+                    <div class="row g-1">
+                        @foreach($items as $label => $done)
+                        <div class="col-6">
+                            <small class="d-flex align-items-center {{ $done ? 'text-success' : 'text-muted' }}">
+                                <i class="bi {{ $done ? 'bi-check-circle-fill' : 'bi-circle' }} me-1" style="font-size: 0.75rem;"></i>
+                                {{ $label }}
+                            </small>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    @if($score < 100)
+                    <div class="mt-3">
+                        <a href="{{ route('alumni.profile.edit') }}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-pencil-square me-1"></i> Lengkapi Profil Sekarang
+                        </a>
+                    </div>
+                    @endif
+                </div>
+                {{-- ===== END PROGRESS BAR ===== --}}
+
             </div>
         </div>
 
@@ -118,7 +194,7 @@
                 {{-- No HP --}}
                 <div class="row mb-3 border-bottom pb-2">
                     <div class="col-md-4 text-secondary">No HP</div>
-                    <div class="col-md-8">{{ $alumni->no_hp ?? '-' }}</div>
+                    <div class="col-md-8">{{ \App\Helpers\FormatHelper::phone($alumni->no_hp) }}</div>
                 </div>
 
                 {{-- Email --}}
@@ -143,18 +219,13 @@
                     <div class="col-md-8">
                         @forelse($alumni->pendidikan as $edu)
                             <div class="mb-3">
-                                {{-- Jenjang: Nama Instansi --}}
                                 <div class="fw-bold">{{ $edu->jenjang }}: {{ $edu->nama_instansi }}</div>
-
-                                {{-- Status Pendidikan --}}
                                 @if($edu->is_ongoing)
-                                    {{-- AKTIF: Masih Belajar --}}
                                     <span class="badge bg-primary text-white" style="font-size: 0.85rem;">
                                         <i class="bi bi-play-circle-fill me-1"></i> Aktif
                                     </span>
                                     <small class="text-muted ms-1">Tahun Masuk {{ $edu->tahun_masuk }}</small>
                                 @else
-                                    {{-- LULUS: Sudah Lulus --}}
                                     <span class="badge bg-success text-white" style="font-size: 0.85rem;">
                                         <i class="bi bi-check-circle-fill me-1"></i> Lulus
                                     </span>
@@ -162,8 +233,6 @@
                                         <small class="text-muted ms-1">Tahun {{ $edu->tahun_lulus }}</small>
                                     @endif
                                 @endif
-
-                                {{-- Program Studi (hanya untuk Perguruan Tinggi) --}}
                                 @if($edu->jenjang === 'Perguruan Tinggi' && $edu->program_studi)
                                     <div class="small text-secondary mt-1">
                                         <i class="bi bi-mortarboard-fill me-1"></i> Prodi: {{ $edu->program_studi }}
@@ -207,19 +276,24 @@
         {{-- PROFILE CARD --}}
         <div class="card border-0 shadow-sm mb-4 text-center">
             <div class="card-body py-5">
-                <div class="mb-3">
-                    @php
-                        $fotoUtama = $alumni->fotos->where('is_main', true)->first();
-                    @endphp
+                @php
+                    $fotoUtama = $alumni->fotos->where('is_main', true)->first();
+                @endphp
 
-                    @if($fotoUtama)
+                <div class="mb-3">
+                    @if($fotoUtama && file_exists(public_path('storage/' . $fotoUtama->path_file)))
                         <img src="{{ asset('storage/' . $fotoUtama->path_file) }}"
-                             class="rounded-circle shadow-sm"
-                             style="width: 110px; height: 110px; object-fit: cover;"
-                             alt="Foto Profil">
+                            class="rounded-circle shadow-sm"
+                            style="width: 110px; height: 110px; object-fit: cover;"
+                            alt="Foto Profil"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="rounded-circle bg-primary text-white d-none align-items-center justify-content-center mx-auto shadow-sm"
+                            style="width: 110px; height: 110px; font-size: 40px; font-weight: bold;">
+                            {{ strtoupper(substr($alumni->nama_lengkap, 0, 1)) }}
+                        </div>
                     @else
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto shadow-sm"
-                             style="width: 110px; height: 110px; font-size: 40px; font-weight: bold;">
+                            style="width: 110px; height: 110px; font-size: 40px; font-weight: bold;">
                             {{ strtoupper(substr($alumni->nama_lengkap, 0, 1)) }}
                         </div>
                     @endif

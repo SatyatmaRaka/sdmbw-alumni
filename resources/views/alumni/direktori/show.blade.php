@@ -97,7 +97,7 @@
                                 @php $displayEmail = $alumni->email ?? ($alumni->user->username ?? null); @endphp
                                 @if($displayEmail)
                                     <a href="mailto:{{ $displayEmail }}"
-                                       class="badge bg-light text-dark border p-2 text-decoration-none">
+                                        class="badge bg-light text-dark border p-2 text-decoration-none">
                                         <i class="bi bi-envelope me-1"></i> {{ $displayEmail }}
                                     </a>
                                 @endif
@@ -105,9 +105,9 @@
                                 {{-- Tampilkan Nomor HP/WA hanya jika show_no_hp = 1 dan no_hp tidak kosong --}}
                                 @if($alumni->show_no_hp && !empty($alumni->no_hp))
                                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $alumni->no_hp) }}"
-                                       target="_blank"
-                                       class="badge bg-success p-2 text-decoration-none text-white">
-                                        <i class="bi bi-whatsapp me-1"></i> {{ $alumni->no_hp }}
+                                        target="_blank"
+                                        class="badge bg-success p-2 text-decoration-none text-white">
+                                        <i class="bi bi-whatsapp me-1"></i> {{ \App\Helpers\FormatHelper::phone($alumni->no_hp) }}
                                     </a>
                                 @endif
 

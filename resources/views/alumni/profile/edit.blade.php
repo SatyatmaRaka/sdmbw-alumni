@@ -79,12 +79,22 @@
                         @error('foto') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
+                    {{-- ALAMAT FIELD - IMPROVED --}}
                     <div class="mb-4">
                         <label class="form-label small fw-bold">Alamat Saat Ini <span class="text-danger">*</span></label>
                         <textarea class="form-control @error('alamat') is-invalid @enderror shadow-none"
-                                  name="alamat" rows="3" required placeholder="Alamat lengkap domisili">{{ old('alamat', $alumni->alamat) }}</textarea>
+                                  name="alamat" rows="3" required
+                                  placeholder="Contoh: Jl. Sudirman No. 45, Kelurahan Mlati Kidul, Kecamatan Kota, Kudus, Jawa Tengah 59319">{{ old('alamat', $alumni->alamat) }}</textarea>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Tuliskan alamat lengkap: Jalan, Nomor, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi, Kode Pos
+                        </small>
+                        @error('alamat')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
+                    {{-- NO HP & EMAIL - IMPROVED --}}
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Nomor HP / WhatsApp <span class="text-danger">*</span></label>
@@ -92,20 +102,40 @@
                                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-phone"></i></span>
                                 <input type="tel" class="form-control border-start-0 shadow-none @error('no_hp') is-invalid @enderror"
                                        name="no_hp" value="{{ old('no_hp', $alumni->no_hp) }}" required
-                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" maxlength="14" placeholder="08xxxxxxxx">
+                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                                       minlength="10" maxlength="15"
+                                       placeholder="08123456789">
                             </div>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Format: 10-15 digit angka, contoh: 081234567890 (tanpa spasi atau tanda hubung)
+                            </small>
+                            @error('no_hp')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input shadow-none" type="checkbox" name="show_no_hp" id="show_no_hp" value="1" {{ old('show_no_hp', $alumni->show_no_hp) ? 'checked' : '' }}>
-                                <label class="form-check-label small text-muted" for="show_no_hp">Tampilkan nomor di profil</label>
+                                <label class="form-check-label small text-muted" for="show_no_hp">
+                                    <i class="bi bi-eye me-1"></i>
+                                    Tampilkan nomor di profil publik (alumni lain dapat melihat)
+                                </label>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Email Aktif</label>
+                            <label class="form-label small fw-bold">Email Aktif <span class="text-muted">(Opsional)</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control border-start-0 shadow-none"
-                                       name="email" value="{{ old('email', $alumni->user->email ?? $alumni->email) }}" placeholder="nama@email.com">
+                                <input type="email" class="form-control border-start-0 shadow-none @error('email') is-invalid @enderror"
+                                       name="email" value="{{ old('email', $alumni->user->email ?? $alumni->email) }}"
+                                       placeholder="nama@email.com">
                             </div>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Email untuk komunikasi dengan sekolah dan sesama alumni
+                            </small>
+                            @error('email')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -192,16 +222,44 @@
                                 </div>
                             </div>
                         @empty
-                            <div id="work-empty-placeholder" class="text-center py-4 text-muted bg-light border-dashed custom-radius-sm mb-3">
-                                <i class="bi bi-briefcase fs-3 d-block mb-2 opacity-50"></i>
-                                <p class="small mb-0">Belum ada data pekerjaan.</p>
+                            {{-- IMPROVED EMPTY STATE --}}
+                            <div id="work-empty-placeholder" class="empty-state text-center py-5 mb-3">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 7H16V5L14 3H10L8 5V7H4C2.9 7 2 7.9 2 9V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V9C22 7.9 21.1 7 20 7ZM10 5H14V7H10V5Z" fill="#CBD5E0"/>
+                                </svg>
+                                <h5 class="mt-3 mb-2 text-muted">Belum Ada Riwayat Pekerjaan</h5>
+                                <p class="text-secondary mb-3 small">Tambahkan pengalaman kerja Anda untuk melengkapi profil</p>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="scrollToAddWork()">
+                                    <i class="bi bi-plus-lg me-1"></i> Tambah Pekerjaan
+                                </button>
                             </div>
                         @endforelse
                     </div>
 
+                    {{-- HARAPAN FIELD - WITH CHARACTER COUNTER --}}
                     <div class="mb-4">
-                        <label class="form-label small fw-bold">Pesan & Harapan Untuk Sekolah</label>
-                        <textarea class="form-control shadow-none" name="harapan" rows="3" placeholder="Tuliskan pesan Anda...">{{ old('harapan', $alumni->harapan) }}</textarea>
+                        <label class="form-label small fw-bold">
+                            Pesan & Harapan Untuk Sekolah <span class="text-muted">(Opsional)</span>
+                        </label>
+                        <textarea
+                            class="form-control shadow-none @error('harapan') is-invalid @enderror"
+                            name="harapan"
+                            id="harapan"
+                            rows="4"
+                            maxlength="500"
+                            placeholder="Contoh: Semoga SD Muhammadiyah Birrul Walidain Kudus terus maju dan menghasilkan alumni-alumni yang berprestasi. Terima kasih atas ilmu dan bimbingan yang telah diberikan...">{{ old('harapan', $alumni->harapan) }}</textarea>
+                        <div class="d-flex justify-content-between">
+                            <small class="form-text text-muted">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Tuliskan harapan, pesan, atau kesan Anda selama bersekolah di SD Muhammadiyah BWK
+                            </small>
+                            <small class="form-text text-muted" id="harapan-counter">
+                                <span id="harapan-current">0</span> / 500 karakter
+                            </small>
+                        </div>
+                        @error('harapan')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="d-flex gap-2 justify-content-end mt-5">
@@ -222,9 +280,10 @@
                 @php $fotoUtama = $alumni->fotos->where('is_main', true)->first(); @endphp
                 <div class="position-relative d-inline-block mb-3">
                     <img id="previewFoto"
-                        src="..."
+                        src="{{ $fotoUtama ? asset('storage/' . $fotoUtama->path_file) : asset('images/default-avatar.png') }}"
                         class="rounded-circle shadow-sm border-5 border-white"
-                        style="width: 140px; height: 140px; object-fit: cover;">
+                        style="width: 140px; height: 140px; object-fit: cover;"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22140%22%3E%3Crect width=%22140%22 height=%22140%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2260%22 fill=%22white%22%3E{{ strtoupper(substr($alumni->nama_lengkap, 0, 1)) }}%3C/text%3E%3C/svg%3E'">
                 </div>
                 <h5 class="fw-bold text-dark mb-1">{{ $alumni->nama_lengkap }}</h5>
                 <p class="text-muted small mb-0">Preview Foto Profil</p>
@@ -261,6 +320,12 @@
     </div>
 </div>
 
+{{-- Hidden form for delete pekerjaan --}}
+<form id="delete-pekerjaan-form" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 <style>
     /* Global Utility */
     .custom-radius { border-radius: 1rem; }
@@ -290,13 +355,14 @@
 </style>
 
 <script>
-    // Logic tetap sama, hanya memoles interaksi sedikit
+    // Preview Image
     function previewImage(event) {
         const reader = new FileReader();
         reader.onload = () => document.getElementById('previewFoto').src = reader.result;
         if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
     }
 
+    // Delete Pekerjaan
     function deletePekerjaan(id, btn) {
         if (confirm('Hapus riwayat pekerjaan ini?')) {
             const form = document.getElementById('delete-pekerjaan-form');
@@ -305,8 +371,59 @@
         }
     }
 
+    // Scroll to Add Work Section
+    function scrollToAddWork() {
+        const addBtn = document.getElementById('add-work');
+        if (addBtn) {
+            addBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            addBtn.click();
+            setTimeout(() => {
+                const workContainer = document.getElementById('work-container');
+                const lastWorkItem = workContainer.querySelector('.work-item:last-child');
+                if (lastWorkItem) {
+                    const firstInput = lastWorkItem.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }
+            }, 500);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle Prodi Visibility
+        // ========================================
+        // CHARACTER COUNTER FOR HARAPAN FIELD
+        // ========================================
+        const harapanField = document.getElementById('harapan');
+        const currentCounter = document.getElementById('harapan-current');
+
+        if (harapanField && currentCounter) {
+            // Update counter on input
+            function updateCounter() {
+                const current = harapanField.value.length;
+                const max = 500;
+
+                currentCounter.textContent = current;
+
+                // Change color based on usage
+                const counterElement = document.getElementById('harapan-counter');
+                if (current > max * 0.9) {
+                    counterElement.style.color = '#dc3545'; // Red
+                } else if (current > max * 0.7) {
+                    counterElement.style.color = '#ffc107'; // Yellow
+                } else {
+                    counterElement.style.color = '#6c757d'; // Gray
+                }
+            }
+
+            harapanField.addEventListener('input', updateCounter);
+            harapanField.addEventListener('keyup', updateCounter);
+
+            // Trigger on load to show current count
+            updateCounter();
+        }
+
+        // ========================================
+        // TOGGLE PRODI VISIBILITY
+        // ========================================
         document.querySelectorAll('.instansi-input[data-jenjang="Perguruan Tinggi"]').forEach((ptInput) => {
             const index = ptInput.closest('.education-item').querySelector('.status-studi').getAttribute('data-index');
             const prodiWrapper = document.getElementById(`prodi-wrapper-${index}`);
@@ -315,7 +432,9 @@
             });
         });
 
-        // Add Work Logic
+        // ========================================
+        // ADD WORK LOGIC
+        // ========================================
         let workIndex = {{ $alumni->pekerjaan->count() }};
         document.getElementById('add-work').addEventListener('click', function() {
             const container = document.getElementById('work-container');
@@ -323,7 +442,7 @@
             if (placeholder) placeholder.remove();
 
             const html = `
-                <div class="work-item border-0 bg-light p-3 mb-3 custom-radius-sm animate__animated animate__fadeIn">
+                <div class="work-item border-0 bg-light p-3 mb-3 custom-radius-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="form-check form-switch">
                             <input type="hidden" name="pekerjaan[${workIndex}][is_current]" value="0">
@@ -347,6 +466,7 @@
             workIndex++;
         });
 
+        // Remove work item
         document.addEventListener('click', (e) => {
             if (e.target.closest('.remove-item')) {
                 e.target.closest('.work-item').remove();
