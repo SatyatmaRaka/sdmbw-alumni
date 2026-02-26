@@ -222,9 +222,21 @@
 
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('landing.index') }}">
-                <i class="bi bi-mortarboard-fill me-2 fs-3" style="color: var(--color-accent)"></i>
-                <span>ALUMNI SDMBW</span>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('landing.index') }}">
+                <div style="
+                    background: rgba(255,255,255,0.12);
+                    border: 1.5px solid rgba(255,255,255,0.2);
+                    border-radius: 10px;
+                    padding: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <img
+                        src="{{ asset('images/logo-sdmbw.png') }}"
+                        alt="Logo SDMBW"
+                        style="height: 38px; width: auto; object-fit: contain; filter: brightness(1.1) drop-shadow(0 0 4px rgba(255,255,255,0.3));">
+                </div>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
