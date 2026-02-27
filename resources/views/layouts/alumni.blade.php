@@ -3,202 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Alumni SDMBW" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - Sistem Alumni</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
     <style>
         :root {
-            --color-primary:      #213448;
-            --color-primary-light:#2d4a65;
-            --color-primary-dark: #1a2838;
-            --color-accent:       #EAE0CF;
-            --color-bg:           #f4f7f9;
-            --sidebar-width:      280px;
+            --color-primary:       #1B3A52;
+            --color-primary-light: #2a5378;
+            --color-primary-dark:  #112534;
+            --color-accent:        #EAE0CF;
+            --color-accent-soft:   rgba(232, 200, 122, 0.15);
+            --color-bg:            #EEF2F7;
+            --color-surface:       #ffffff;
+            --color-text:          #1e293b;
+            --color-text-muted:    #64748b;
+            --sidebar-width:       270px;
+            --radius-card:         16px;
+            --radius-btn:          10px;
+            --shadow-card:         0 4px 24px rgba(27,58,82,0.08);
+            --shadow-sidebar:      6px 0 32px rgba(0,0,0,0.14);
+            --transition:          all 0.28s cubic-bezier(0.4,0,0.2,1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--color-bg);
-            color: #334155;
+            color: var(--color-text);
             min-height: 100vh;
         }
 
-        /* ===== SIDEBAR ===== */
+        /* ────────── SIDEBAR ────────── */
         .sidebar {
             position: fixed;
             top: 0; left: 0;
             width: var(--sidebar-width);
             height: 100vh;
-            background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            background: var(--color-primary-dark);
             color: white;
             z-index: 1050;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sidebar);
             overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* subtle noise texture overlay */
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+            pointer-events: none;
+            opacity: 0.4;
         }
 
         .sidebar-header {
-            padding: 2.5rem 1.5rem;
+            padding: 2rem 1.5rem 1.75rem;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: relative;
         }
 
-        .sidebar-header i {
-            font-size: 2.5rem;
-            color: var(--color-accent);
-            margin-bottom: 10px;
-            display: block;
+        .sidebar-logo-wrap {
+            width: 56px; height: 56px;
+            background: var(--color-accent);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            box-shadow: 0 8px 24px rgba(232,200,122,0.3);
+        }
+
+        .sidebar-logo-wrap i {
+            font-size: 1.75rem;
+            color: var(--color-primary-dark);
         }
 
         .sidebar-header h5 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            margin: 0;
+            font-family: 'DM Serif Display', serif;
+            font-weight: 400;
+            font-size: 1.15rem;
+            letter-spacing: 0.3px;
+            color: #fff;
+            margin: 0 0 6px;
         }
 
-        .nav-item { margin: 0.4rem 1rem; }
+        .sidebar-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.4px;
+        }
+
+        /* nav section label */
+        .nav-section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.25);
+            padding: 0 1.6rem;
+            margin: 1.4rem 0 0.5rem;
+        }
+
+        .nav-item { margin: 2px 0.75rem; }
 
         .nav-link {
-            color: rgba(255,255,255,0.7);
-            padding: 0.9rem 1.2rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
+            color: rgba(255,255,255,0.6);
+            padding: 0.78rem 1rem;
+            border-radius: var(--radius-btn);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             font-weight: 500;
+            font-size: 0.875rem;
+            gap: 12px;
+            position: relative;
         }
 
         .nav-link i {
-            font-size: 1.25rem;
-            margin-right: 12px;
-            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            width: 22px;
+            text-align: center;
+            transition: var(--transition);
         }
 
         .nav-link:hover {
-            color: white;
-            background: rgba(255,255,255,0.08);
-            transform: translateX(5px);
+            color: #fff;
+            background: rgba(255,255,255,0.07);
+            transform: translateX(3px);
         }
 
         .nav-link.active {
             background: var(--color-accent);
             color: var(--color-primary-dark);
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(232,200,122,0.25);
         }
 
         .nav-link.active i { color: var(--color-primary-dark); }
 
         .nav-divider {
             height: 1px;
-            background: rgba(255,255,255,0.1);
-            margin: 1.5rem;
+            background: rgba(255,255,255,0.07);
+            margin: 1rem 1.25rem;
         }
 
-        /* ===== MAIN CONTENT ===== */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-footer .nav-item { margin: 0; }
+
+        .nav-link-danger {
+            color: rgba(255,100,100,0.7) !important;
+        }
+        .nav-link-danger:hover {
+            color: #ff7272 !important;
+            background: rgba(255,100,100,0.08) !important;
+        }
+
+        /* ────────── MAIN CONTENT ────────── */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            min-height: 100vh;
         }
 
-        /* ===== TOPBAR ===== */
+        /* ────────── TOPBAR ────────── */
         .topbar {
-            background: white;
-            padding: 1rem 2.5rem;
+            background: var(--color-surface);
+            padding: 0.875rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.03);
             position: sticky;
             top: 0;
             z-index: 1000;
+            gap: 1rem;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
         }
 
         .topbar h4 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
+            font-family: 'DM Serif Display', serif;
+            font-weight: 400;
             color: var(--color-primary);
             margin: 0;
-            font-size: 1.4rem;
+            font-size: 1.45rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .content-body { padding: 2.5rem; }
+        /* breadcrumb accent line */
+        .topbar h4::before {
+            content: '';
+            display: inline-block;
+            width: 4px; height: 1em;
+            background: var(--color-accent);
+            border-radius: 2px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
 
-        /* ===== USER DROPDOWN ===== */
+        .content-body {
+            padding: 2rem 2.5rem;
+        }
+
+        /* ────────── USER DROPDOWN ────────── */
         .user-dropdown .btn-user {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 6px 12px;
+            gap: 10px;
+            padding: 5px 10px 5px 14px;
             border-radius: 50px;
-            transition: all 0.3s;
-            border: 1px solid #f1f5f9;
+            transition: var(--transition);
+            border: 1px solid #e2e8f0;
             cursor: pointer;
+            background: #f8fafc;
         }
 
-        .user-dropdown .btn-user:hover { background: #f8fafc; }
+        .user-dropdown .btn-user:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
 
-        .user-info { text-align: right; line-height: 1.2; }
-        .user-info .name { display: block; font-weight: 600; font-size: 0.9rem; color: var(--color-primary); }
-        .user-info .role { font-size: 0.75rem; color: #94a3b8; }
+        .user-info { text-align: right; line-height: 1.3; }
+        .user-info .name {
+            display: block;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--color-primary);
+        }
+        .user-info .role {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
 
         .avatar-circle {
-            width: 40px; height: 40px;
-            background: var(--color-primary);
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 800;
+            font-size: 0.85rem;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(27,58,82,0.25);
         }
 
-        /* ===== MOBILE TOGGLE ===== */
+        .dropdown-menu {
+            border-radius: var(--radius-card) !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+            padding: 0.5rem !important;
+        }
+
+        .dropdown-item {
+            border-radius: 8px !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text) !important;
+            transition: var(--transition);
+        }
+        .dropdown-item:hover { background: #f1f5f9 !important; }
+
+        /* ────────── ALERTS ────────── */
+        .alert {
+            border: none;
+            border-radius: var(--radius-card);
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-card);
+        }
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+        .alert-danger {
+            background: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .alert-info {
+            background: #eff6ff;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* ────────── MOBILE TOGGLE ────────── */
         .mobile-toggle {
             display: none;
-            background: white;
-            border: none;
-            font-size: 1.5rem;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1.25rem;
             color: var(--color-primary);
-            padding: 0.5rem;
+            padding: 0.35rem 0.6rem;
             cursor: pointer;
+            transition: var(--transition);
+            line-height: 1;
         }
+        .mobile-toggle:hover { background: #e2e8f0; }
 
-        /* ===== SIDEBAR OVERLAY ===== */
+        /* ────────── OVERLAY ────────── */
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(10,18,28,0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 1040;
         }
         .sidebar-overlay.show { display: block; }
 
-        /* ===== RESPONSIVE ===== */
+        /* ────────── PAGE ENTRY ANIMATION ────────── */
+        .content-body {
+            animation: fadeUp 0.4s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ────────── RESPONSIVE ────────── */
         @media (max-width: 991px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.show { transform: translateX(0); }
             .main-content { margin-left: 0; }
-            .mobile-toggle { display: block; }
-            .topbar { padding: 1rem 1.5rem; }
-            .content-body { padding: 1.5rem; }
+            .mobile-toggle { display: inline-flex; align-items: center; }
+            .topbar { padding: 0.875rem 1.25rem; }
+            .content-body { padding: 1.25rem; }
             .user-info { display: none; }
         }
 
         @media (max-width: 575px) {
             .content-body { padding: 1rem; }
+            .topbar h4 { font-size: 1.2rem; }
         }
     </style>
 
@@ -212,14 +393,16 @@
     {{-- ===== SIDEBAR ===== --}}
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <i class="bi bi-mortarboard-fill"></i>
-            <h5>SISTEM ALUMNI</h5>
-            <div class="badge bg-white bg-opacity-10 text-white-50 fw-normal mt-2">
-                SD Muhammadiyah BWK
+            <div class="sidebar-logo-wrap">
+                <i class="bi bi-mortarboard-fill"></i>
             </div>
+            <h5>Sistem Alumni</h5>
+            <span class="sidebar-badge">SD Muhammadiyah BWK</span>
         </div>
 
-        <nav class="mt-4">
+        <nav class="mt-2">
+            <div class="nav-section-label">Menu Utama</div>
+
             <div class="nav-item">
                 <a class="nav-link {{ request()->routeIs('alumni.dashboard') ? 'active' : '' }}"
                    href="{{ route('alumni.dashboard') }}">
@@ -229,33 +412,32 @@
             </div>
             <div class="nav-item">
                 <a class="nav-link {{ request()->routeIs('alumni.profile.*') ? 'active' : '' }}"
-                   href="{{ route('alumni.profile.edit') }}">
+                    href="{{ route('alumni.profile.edit') }}">
                     <i class="bi bi-person-bounding-box"></i>
                     <span>Profil Saya</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a class="nav-link {{ request()->routeIs('alumni.direktori.*') ? 'active' : '' }}"
-                   href="{{ route('alumni.direktori.index') }}">
+                    href="{{ route('alumni.direktori.index') }}">
                     <i class="bi bi-journal-text"></i>
                     <span>Direktori Alumni</span>
                 </a>
             </div>
+        </nav>
 
-            <div class="nav-divider"></div>
-
+        <div class="sidebar-footer">
             <div class="nav-item">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit"
-                            class="nav-link text-start w-100 border-0 bg-transparent"
-                            style="color: #ff6b6b;">
+                            class="nav-link nav-link-danger text-start w-100 border-0 bg-transparent">
                         <i class="bi bi-power"></i>
                         <span>Keluar Sistem</span>
                     </button>
                 </form>
             </div>
-        </nav>
+        </div>
     </aside>
 
     {{-- ===== MAIN CONTENT ===== --}}
@@ -263,7 +445,7 @@
 
         {{-- TOPBAR --}}
         <header class="topbar">
-            <div class="d-flex align-items-center gap-3">
+            <div class="topbar-left">
                 <button class="mobile-toggle" id="btnToggle">
                     <i class="bi bi-list"></i>
                 </button>
@@ -281,17 +463,17 @@
                     </div>
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3"
-                    style="border-radius: 15px; min-width: 200px;">
-                    <li class="p-2">
-                        <a class="dropdown-item rounded-3 py-2" href="{{ route('alumni.profile.edit') }}">
+                    style="min-width: 200px;">
+                    <li class="p-1">
+                        <a class="dropdown-item py-2" href="{{ route('alumni.profile.edit') }}">
                             <i class="bi bi-person me-2"></i> Profil Saya
                         </a>
                     </li>
                     <li><hr class="dropdown-divider opacity-50 my-1"></li>
-                    <li class="p-2">
+                    <li class="p-1">
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="dropdown-item rounded-3 py-2 text-danger">
+                            <button type="submit" class="dropdown-item py-2 text-danger">
                                 <i class="bi bi-box-arrow-right me-2"></i> Keluar
                             </button>
                         </form>
@@ -302,39 +484,6 @@
 
         {{-- CONTENT --}}
         <main class="content-body">
-
-            {{-- SESSION ALERTS --}}
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                    <div>{{ session('success') }}</div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-x-circle-fill me-3 fs-5"></i>
-                    <div>{{ session('error') }}</div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if(session('warning'))
-                <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
-                    <div>{{ session('warning') }}</div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-info-circle-fill me-3 fs-5"></i>
-                    <div>{{ session('info') }}</div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
             @yield('content')
         </main>

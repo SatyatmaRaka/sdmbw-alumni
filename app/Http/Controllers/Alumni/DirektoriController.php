@@ -19,7 +19,7 @@ class DirektoriController extends Controller
     public function index(Request $request): View
     {
         // Eager load untuk menghindari N+1 query
-        $query = Alumni::with(['angkatan', 'fotos']);
+        $query = Alumni::with(['angkatan', 'fotos'])->verified();
 
         // Filter pencarian nama
         if ($request->filled('search')) {

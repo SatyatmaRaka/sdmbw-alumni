@@ -4,103 +4,422 @@
 @section('page-title', 'Ringkasan Sistem')
 
 @section('content')
+<style>
+    :root {
+        --primary:       #1B3A52;
+        --primary-light: #2a5378;
+        --primary-dark:  #112534;
+        --accent:        #EAE0CF;
+        --accent-soft:   rgba(232,200,122,0.12);
+        --success:       #16a34a;
+        --warning:       #d97706;
+        --danger:        #e53e3e;
+        --info:          #0891b2;
+        --radius:        14px;
+        --transition:    all 0.24s cubic-bezier(0.4,0,0.2,1);
+        --shadow-card:   0 2px 0 rgba(255,255,255,0.8) inset, 0 6px 24px rgba(27,58,82,0.08);
+    }
+
+    /* ─── STAT CARDS ─── */
+    .stat-card {
+        border-radius: var(--radius);
+        padding: 1.4rem 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        text-decoration: none;
+        display: block;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+        color: white;
+    }
+
+    /* dot grid overlay */
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-size: 18px 18px;
+        pointer-events: none;
+    }
+
+    .stat-card-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); }
+    .stat-card-success { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .stat-card-warning { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .stat-card-info    { background: linear-gradient(135deg, #0e7490 0%, #22d3ee 100%); }
+
+    .stat-card-inner { position: relative; z-index: 1; }
+
+    .stat-icon {
+        font-size: 2rem;
+        opacity: 0.2;
+        float: right;
+        margin-top: -4px;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover .stat-icon { opacity: 0.35; transform: scale(1.1); }
+
+    .stat-number {
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0.5rem 0 0.2rem;
+        line-height: 1;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.82rem;
+        opacity: 0.88;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    /* notification badge */
+    .stat-badge {
+        position: absolute;
+        top: -6px; right: -6px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 50px;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(239,68,68,0.4);
+        animation: pulse-badge 2s infinite;
+    }
+
+    @keyframes pulse-badge {
+        0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+        70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+        100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    }
+
+    /* ─── SECTION CARD ─── */
+    .card-section {
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid rgba(226,232,240,0.8);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .card-section-header {
+        background: var(--primary);
+        padding: 0.95rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .card-section-header::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: var(--accent);
+    }
+
+    .card-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-weight: 700;
+        font-size: 0.83rem;
+        letter-spacing: 0.3px;
+    }
+
+    .card-section-title i { opacity: 0.8; }
+
+    .card-section-body { padding: 0; }
+
+    .btn-lihat-semua {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.3rem 0.85rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: rgba(255,255,255,0.85);
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-lihat-semua:hover {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border-color: rgba(255,255,255,0.3);
+    }
+
+    /* ─── TABLE ─── */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .data-table thead th {
+        background: #f8fafc;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.67rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+    }
+
+    .data-table tbody td {
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid #f8fafc;
+        color: var(--primary);
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .data-table tbody tr:hover td { background: #fafbfc; }
+
+    .td-angkatan { font-weight: 700; }
+    .td-tahun    { color: #64748b; }
+    .td-count strong { font-weight: 800; font-size: 1rem; }
+    .td-count small  { color: #94a3b8; }
+
+    .status-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.2rem 0.7rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .tag-lulus { background: rgba(22,163,74,0.1);  border: 1px solid rgba(22,163,74,0.22);  color: var(--success); }
+    .tag-aktif { background: rgba(217,119,6,0.1);  border: 1px solid rgba(217,119,6,0.22);  color: var(--warning); }
+    .tag-other { background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; }
+
+    /* ─── RECENT ALUMNI LIST ─── */
+    .alumni-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid #f8fafc;
+        transition: var(--transition);
+        gap: 0.75rem;
+    }
+
+    .alumni-item:last-child { border-bottom: none; }
+    .alumni-item:hover { background: #fafbfc; }
+
+    .alumni-item-left {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .alumni-avatar-sm {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--primary);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        border: 2px solid #f1f5f9;
+    }
+
+    .alumni-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+    .alumni-avatar-sm i { font-size: 1.1rem; color: rgba(255,255,255,0.25); }
+
+    .alumni-item-name {
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: var(--primary);
+        text-decoration: none;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: var(--transition);
+    }
+
+    .alumni-item-name:hover { color: var(--primary-light); }
+
+    .alumni-item-meta {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .v-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.25rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .v-verified { background: rgba(22,163,74,0.1);  border: 1px solid rgba(22,163,74,0.22);  color: var(--success); }
+    .v-pending  {
+        background: rgba(217,119,6,0.1);
+        border: 1px solid rgba(217,119,6,0.22);
+        color: var(--warning);
+        animation: pulse-pending 2s infinite;
+    }
+    .v-rejected { background: rgba(229,62,62,0.1);  border: 1px solid rgba(229,62,62,0.22);  color: var(--danger); }
+
+    @keyframes pulse-pending {
+        0%   { box-shadow: 0 0 0 0 rgba(217,119,6,0.25); }
+        70%  { box-shadow: 0 0 0 6px rgba(217,119,6,0); }
+        100% { box-shadow: 0 0 0 0 rgba(217,119,6,0); }
+    }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-mini {
+        text-align: center;
+        padding: 2.5rem 1rem;
+    }
+
+    .empty-mini i { font-size: 2.5rem; opacity: 0.15; color: var(--primary); display: block; margin-bottom: 0.75rem; }
+    .empty-mini p { font-size: 0.83rem; color: #94a3b8; margin: 0; }
+
+    /* ─── SUMMARY ALERT ─── */
+    .summary-alert {
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid rgba(226,232,240,0.8);
+        border-left: 4px solid var(--info);
+        box-shadow: var(--shadow-card);
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 1.5rem;
+    }
+
+    .summary-alert i { font-size: 1.1rem; color: var(--info); flex-shrink: 0; margin-top: 2px; }
+    .summary-alert h6 { font-weight: 700; color: var(--primary); margin-bottom: 3px; font-size: 0.88rem; }
+    .summary-alert p  { font-size: 0.83rem; color: #64748b; margin: 0; }
+</style>
+
+{{-- ── STAT CARDS ── --}}
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <a href="{{ route('admin.alumni.index') }}" class="text-decoration-none">
-            <div class="stats-card primary shadow-sm">
-                <div class="icon">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-                <h3>{{ number_format($stats['total_alumni']) }}</h3>
-                <p class="mb-0">Total Alumni</p>
+    <div class="col-6 col-lg-3">
+        <a href="{{ route('admin.alumni.index') }}" class="stat-card stat-card-primary">
+            <div class="stat-card-inner">
+                <i class="bi bi-people-fill stat-icon"></i>
+                <span class="stat-number">{{ number_format($stats['total_alumni']) }}</span>
+                <p class="stat-label">Total Alumni</p>
             </div>
         </a>
     </div>
 
-    <div class="col-md-3">
-        <a href="{{ route('admin.alumni.index', ['status' => 'verified']) }}" class="text-decoration-none">
-            <div class="stats-card success shadow-sm">
-                <div class="icon">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <h3>{{ number_format($stats['alumni_verified']) }}</h3>
-                <p class="mb-0">Terverifikasi</p>
+    <div class="col-6 col-lg-3">
+        <a href="{{ route('admin.alumni.index', ['status' => 'verified']) }}" class="stat-card stat-card-success">
+            <div class="stat-card-inner">
+                <i class="bi bi-check-circle-fill stat-icon"></i>
+                <span class="stat-number">{{ number_format($stats['alumni_verified']) }}</span>
+                <p class="stat-label">Terverifikasi</p>
             </div>
         </a>
     </div>
 
-    <div class="col-md-3">
-        <a href="{{ route('admin.alumni.index', ['status' => 'pending']) }}" class="text-decoration-none">
-            <div class="stats-card warning shadow-sm position-relative">
-                @if($stats['alumni_pending'] > 0)
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow">
-                        {{ $stats['alumni_pending'] }}
-                        <span class="visually-hidden">pending alumni</span>
-                    </span>
-                @endif
-                <div class="icon">
-                    <i class="bi bi-clock-fill"></i>
-                </div>
-                <h3>{{ number_format($stats['alumni_pending']) }}</h3>
-                <p class="mb-0">Butuh Verifikasi</p>
+    <div class="col-6 col-lg-3">
+        <a href="{{ route('admin.alumni.index', ['status' => 'pending']) }}"
+           class="stat-card stat-card-warning" style="position:relative;">
+            @if($stats['alumni_pending'] > 0)
+                <span class="stat-badge">{{ $stats['alumni_pending'] }}</span>
+            @endif
+            <div class="stat-card-inner">
+                <i class="bi bi-clock-fill stat-icon"></i>
+                <span class="stat-number">{{ number_format($stats['alumni_pending']) }}</span>
+                <p class="stat-label">Butuh Verifikasi</p>
             </div>
         </a>
     </div>
 
-    <div class="col-md-3">
-        <a href="{{ route('admin.alumni.index', ['complete' => '1']) }}" class="text-decoration-none">
-            <div class="stats-card info shadow-sm">
-                <div class="icon">
-                    <i class="bi bi-person-check-fill"></i>
-                </div>
-                <h3>{{ number_format($stats['profil_lengkap']) }}</h3>
-                <p class="mb-0">Profil Lengkap</p>
+    <div class="col-6 col-lg-3">
+        <a href="{{ route('admin.alumni.index', ['complete' => '1']) }}" class="stat-card stat-card-info">
+            <div class="stat-card-inner">
+                <i class="bi bi-person-check-fill stat-icon"></i>
+                <span class="stat-number">{{ number_format($stats['profil_lengkap']) }}</span>
+                <p class="stat-label">Profil Lengkap</p>
             </div>
         </a>
     </div>
 </div>
 
+{{-- ── MAIN TABLES ── --}}
 <div class="row g-3">
-    <div class="col-md-7">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 border-bottom-0">
-                <h6 class="mb-0 fw-bold text-dark">
-                    <i class="bi bi-bar-chart-fill text-primary me-2"></i>Statistik Per Angkatan
-                </h6>
+
+    {{-- Statistik Per Angkatan --}}
+    <div class="col-lg-7">
+        <div class="card-section">
+            <div class="card-section-header">
+                <div class="card-section-title">
+                    <i class="bi bi-bar-chart-fill"></i> Statistik Per Angkatan
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-section-body">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light text-muted small text-uppercase">
+                    <table class="data-table">
+                        <thead>
                             <tr>
                                 <th>Angkatan</th>
                                 <th>Tahun Ajaran</th>
                                 <th>Status</th>
-                                <th class="text-center">Jumlah Alumni</th>
+                                <th style="text-align:center;">Jumlah</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($angkatanStats as $angkatan)
-                            <tr>
-                                <td class="fw-bold">{{ $angkatan->nama_angkatan }}</td>
-                                <td>{{ $angkatan->tahun_ajaran }}</td>
-                                <td>
-                                    @if($angkatan->status == 'LULUS')
-                                        <span class="badge rounded-pill bg-light-success text-success border border-success px-3">LULUS</span>
-                                    @elseif($angkatan->status == 'AKTIF')
-                                        <span class="badge rounded-pill bg-light-warning text-warning border border-warning px-3">AKTIF</span>
-                                    @else
-                                        <span class="badge rounded-pill bg-light text-dark border px-3">{{ $angkatan->status }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <span class="fw-bold">{{ number_format($angkatan->alumni_count) }}</span> <small class="text-muted">Orang</small>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td class="td-angkatan">{{ $angkatan->nama_angkatan }}</td>
+                                    <td class="td-tahun">{{ $angkatan->tahun_ajaran }}</td>
+                                    <td>
+                                        @if($angkatan->status === 'LULUS')
+                                            <span class="status-tag tag-lulus"><i class="bi bi-check-circle-fill"></i> LULUS</span>
+                                        @elseif($angkatan->status === 'AKTIF')
+                                            <span class="status-tag tag-aktif"><i class="bi bi-play-circle-fill"></i> AKTIF</span>
+                                        @else
+                                            <span class="status-tag tag-other">{{ $angkatan->status }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="td-count" style="text-align:center;">
+                                        <strong>{{ number_format($angkatan->alumni_count) }}</strong>
+                                        <small>Orang</small>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-muted small">Belum ada data angkatan</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-mini">
+                                            <i class="bi bi-inbox"></i>
+                                            <p>Belum ada data angkatan</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -109,108 +428,70 @@
         </div>
     </div>
 
-    <div class="col-md-5">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
-                <h6 class="mb-0 fw-bold text-dark">
-                    <i class="bi bi-person-plus-fill text-primary me-2"></i>Pendaftar Terbaru
-                </h6>
-                <a href="{{ route('admin.alumni.index') }}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">Lihat Semua</a>
+    {{-- Pendaftar Terbaru --}}
+    <div class="col-lg-5">
+        <div class="card-section">
+            <div class="card-section-header">
+                <div class="card-section-title">
+                    <i class="bi bi-person-plus-fill"></i> Pendaftar Terbaru
+                </div>
+                <a href="{{ route('admin.alumni.index') }}" class="btn-lihat-semua">
+                    Lihat Semua <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
-            <div class="card-body">
+            <div class="card-section-body">
                 @forelse($recentAlumni as $alumni)
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-sm me-3 bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; overflow: hidden; border: 2px solid #f0f0f0;">
-                            @php
-                                $fotoUtama = $alumni->fotos->where('is_main', true)->first();
-                            @endphp
-                            @if($fotoUtama)
-                                <img src="{{ asset('storage/' . $fotoUtama->path_file) }}"
-                                        class="img-fluid"
-                                        style="width: 40px; height: 40px; object-fit: cover;"
-                                        alt="Foto {{ $alumni->nama_lengkap }}">
-                            @else
-                                <i class="bi bi-person text-secondary fs-5"></i>
-                            @endif
+                    @php $foto = $alumni->fotos->where('is_main', true)->first(); @endphp
+                    <div class="alumni-item">
+                        <div class="alumni-item-left">
+                            <div class="alumni-avatar-sm">
+                                @if($foto)
+                                    <img src="{{ asset('storage/' . $foto->path_file) }}"
+                                         alt="{{ $alumni->nama_lengkap }}">
+                                @else
+                                    <i class="bi bi-person-fill"></i>
+                                @endif
+                            </div>
+                            <div style="min-width:0;">
+                                <a href="{{ route('admin.alumni.show', $alumni) }}" class="alumni-item-name">
+                                    {{ $alumni->nama_lengkap }}
+                                </a>
+                                <span class="alumni-item-meta">{{ $alumni->angkatan->nama_angkatan ?? 'Tanpa Angkatan' }}</span>
+                            </div>
                         </div>
                         <div>
-                            <a href="{{ route('admin.alumni.show', $alumni) }}" class="text-decoration-none">
-                                <h6 class="mb-0 small fw-bold text-dark">{{ $alumni->nama_lengkap }}</h6>
-                            </a>
-                            <small class="text-muted" style="font-size: 11px;">
-                                {{ $alumni->angkatan->nama_angkatan ?? 'Tanpa Angkatan' }}
-                            </small>
+                            @if($alumni->status_verifikasi === 'verified')
+                                <span class="v-pill v-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                            @elseif($alumni->status_verifikasi === 'pending')
+                                <span class="v-pill v-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                            @else
+                                <span class="v-pill v-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                            @endif
                         </div>
                     </div>
-                    <div>
-                        @if($alumni->status_verifikasi == 'verified')
-                            <span class="badge bg-success small fw-normal">
-                                <i class="bi bi-check-circle-fill me-1"></i>Verified
-                            </span>
-                        @elseif($alumni->status_verifikasi == 'pending')
-                            <span class="badge bg-warning text-dark small pulse fw-normal">
-                                <i class="bi bi-hourglass-split me-1"></i>Pending
-                            </span>
-                        @else
-                            <span class="badge bg-danger small fw-normal">
-                                <i class="bi bi-x-circle-fill me-1"></i>Rejected
-                            </span>
-                        @endif
-                    </div>
-                </div>
                 @empty
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox text-muted opacity-25" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-2 small">Belum ada pendaftar baru</p>
-                </div>
+                    <div class="empty-mini">
+                        <i class="bi bi-inbox"></i>
+                        <p>Belum ada pendaftar baru</p>
+                    </div>
                 @endforelse
             </div>
         </div>
     </div>
+
 </div>
 
-<div class="row mt-4 mb-3">
-    <div class="col-12">
-        <div class="alert alert-white border-start border-info border-4 shadow-sm py-3 mb-0">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-info-circle-fill text-info fs-4 me-3"></i>
-                <div>
-                    <h6 class="mb-0 fw-bold">Ringkasan Alumni</h6>
-                    <p class="mb-0 small text-muted">Sistem mencatat <strong>{{ $stats['total_alumni'] }}</strong> total alumni dengan <strong>{{ $stats['alumni_verified'] }}</strong> sudah terverifikasi dan <strong>{{ $stats['alumni_pending'] }}</strong> menunggu verifikasi.</p>
-                </div>
-            </div>
-        </div>
+{{-- ── SUMMARY ── --}}
+<div class="summary-alert">
+    <i class="bi bi-info-circle-fill"></i>
+    <div>
+        <h6>Ringkasan Alumni</h6>
+        <p>
+            Sistem mencatat <strong>{{ $stats['total_alumni'] }}</strong> total alumni dengan
+            <strong>{{ $stats['alumni_verified'] }}</strong> sudah terverifikasi dan
+            <strong>{{ $stats['alumni_pending'] }}</strong> menunggu verifikasi.
+        </p>
     </div>
 </div>
 
-<style>
-    /* Pulse Animation untuk Status Pending */
-    .pulse { animation: pulse-animation 2s infinite; }
-    @keyframes pulse-animation {
-        0% { box-shadow: 0 0 0 0px rgba(255, 193, 7, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
-        100% { box-shadow: 0 0 0 0px rgba(255, 193, 7, 0); }
-    }
-
-    /* Custom Color Badge */
-    .bg-light-success { background-color: rgba(25, 135, 84, 0.1); }
-    .bg-light-warning { background-color: rgba(255, 193, 7, 0.1); }
-
-    /* Stats Card Styling */
-    .stats-card {
-        padding: 20px;
-        border-radius: 12px;
-        color: white;
-        transition: all 0.3s ease;
-    }
-    .stats-card:hover { transform: translateY(-5px); }
-    .stats-card.primary { background: linear-gradient(45deg, #0d6efd, #0043a8); }
-    .stats-card.success { background: linear-gradient(45deg, #198754, #0f5132); }
-    .stats-card.warning { background: linear-gradient(45deg, #ffc107, #e0a800); color: #000; }
-    .stats-card.info { background: linear-gradient(45deg, #0dcaf0, #0a7e8f); }
-    .stats-card .icon { font-size: 2.2rem; opacity: 0.25; float: right; margin-top: -5px; }
-    .stats-card h3 { font-weight: 800; margin-top: 10px; font-size: 1.8rem; }
-    .stats-card p { font-size: 0.9rem; opacity: 0.9; font-weight: 500; }
-</style>
 @endsection
