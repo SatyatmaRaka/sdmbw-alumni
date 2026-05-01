@@ -24,7 +24,6 @@ class AdminSeeder extends Seeder
                 'role'      => 'admin',
                 // PENTING: Admin harus otomatis aktif agar bisa login
                 'is_active' => true,
-                'nisn'      => '0000000000', // Formalitas untuk akun admin
             ]);
 
             $this->command->info('✅ Akun admin berhasil dibuat!');

@@ -13,6 +13,12 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
 {
     protected $filters;
 
+    /**
+     * Counter baris — instance property (bukan static) agar
+     * aman jika export dipanggil lebih dari sekali dalam satu request.
+     */
+    protected int $counter = 1;
+
     public function __construct($filters = [])
     {
         $this->filters = $filters;
@@ -49,20 +55,16 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
     public function headings(): array
     {
         return [
-            'No',
-            'NISN',
             'Nama Lengkap',
-            'Angkatan',
-            'Tahun Ajaran',
+            'NIPD',
+            'Jenis Kelamin',
+            'NISN',
+            'Angkatan ID',
             'Tahun Lulus',
-            'Alamat',
-            'No. HP / WhatsApp',
             'Email',
+            'No HP / WA',
+            'Alamat',
             'Status Verifikasi',
-            'Profil Lengkap',
-            'Pendidikan Terakhir',
-            'Pekerjaan Terkini',
-            'Tanggal Registrasi',
         ];
     }
 
@@ -71,18 +73,17 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
      */
     public function map($alumni): array
     {
-        // Ambil pendidikan terakhir
-        $pendidikanTerakhir = $alumni->pendidikan()
-            ->orderBy('tahun_lulus', 'desc')
+        // Akses collection yang sudah di-eager-load di collection() — TIDAK trigger query baru
+        $pendidikanTerakhir = $alumni->pendidikan
+            ->sortByDesc('tahun_lulus')
             ->first();
         $pendidikanText = $pendidikanTerakhir
             ? $pendidikanTerakhir->jenjang . ' - ' . $pendidikanTerakhir->nama_instansi
             : '-';
 
-        // Ambil pekerjaan terkini
-        $pekerjaanTerkini = $alumni->pekerjaan()
-            ->where('is_current', true)
-            ->first();
+        // Akses collection pekerjaan yang sudah di-eager-load
+        $pekerjaanTerkini = $alumni->pekerjaan->firstWhere('is_current', true)
+            ?? $alumni->pekerjaan->last();
         $pekerjaanText = $pekerjaanTerkini
             ? $pekerjaanTerkini->jabatan . ' di ' . $pekerjaanTerkini->nama_perusahaan
             : '-';
@@ -98,23 +99,17 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
         // Kelengkapan profil
         $profilLengkap = $alumni->is_profile_complete ? 'Lengkap' : 'Belum Lengkap';
 
-        static $counter = 1;
-
         return [
-            $counter++,
-            $alumni->nisn,
             $alumni->nama_lengkap,
-            $alumni->angkatan->nama_angkatan ?? '-',
-            $alumni->angkatan->tahun_ajaran ?? '-',
+            $alumni->nipd ?? '-',
+            $alumni->jenis_kelamin ?? '-',
+            $alumni->nisn,
+            $alumni->angkatan_id,
             $alumni->tahun_lulus,
-            $alumni->alamat ?? '-',
-            $alumni->no_hp ?? '-',
             $alumni->email ?? '-',
+            $alumni->no_hp ?? '-',
+            $alumni->alamat ?? '-',
             $statusText,
-            $profilLengkap,
-            $pendidikanText,
-            $pekerjaanText,
-            $alumni->created_at->format('d-m-Y H:i'),
         ];
     }
 

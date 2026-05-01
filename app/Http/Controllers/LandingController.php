@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumni;
 use App\Models\Angkatan;
+use App\Models\Faq;
+use App\Models\Testimoni;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -16,64 +18,29 @@ class LandingController extends Controller
      */
     public function index(): View
     {
-        $stats = [
-            'total_alumni' => Alumni::verified()->count(),
-            'total_angkatan' => Angkatan::count(),
-        ];
+        $stats = \Illuminate\Support\Facades\Cache::remember('landing_stats', 60 * 60, function () {
+            return [
+                'total_alumni' => Alumni::verified()->count(),
+                'total_angkatan' => Angkatan::count(),
+                'profil_lengkap' => Alumni::where('is_profile_complete', true)->count(),
+                'total_instansi' => \Illuminate\Support\Facades\DB::table('alumni_pendidikan')->distinct('nama_instansi')->count('nama_instansi') 
+                                   + \Illuminate\Support\Facades\DB::table('alumni_pekerjaan')->distinct('nama_perusahaan')->count('nama_perusahaan'),
+            ];
+        });
 
-        return view('landing.index', compact('stats'));
-    }
+        $faqs = \Illuminate\Support\Facades\Cache::remember('landing_faqs', 60 * 60, function () {
+            return Faq::where('is_active', true)->orderBy('order_num', 'asc')->get();
+        });
+        
+        $testimonis = \Illuminate\Support\Facades\Cache::remember('landing_testimonis', 60 * 60, function () {
+            return Testimoni::with(['alumni.fotos', 'alumni.angkatan'])
+                ->where('is_active', true)
+                ->where('is_featured', true)
+                ->latest()
+                ->take(6)
+                ->get();
+        });
 
-    /**
-     * Tampilkan direktori alumni publik dengan filter dan pagination
-     *
-     * @param Request $request
-     * @return View
-     */
-    public function direktori(Request $request): View
-    {
-        // Query alumni yang terverifikasi dengan eager loading
-        $query = Alumni::with(['angkatan', 'user'])->verified();
-
-        // Filter angkatan
-        if ($request->filled('angkatan_id')) {
-            $query->where('angkatan_id', $request->angkatan_id);
-        }
-
-        // Filter pencarian
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
-            });
-        }
-
-        // Pagination dengan query string
-        $alumnis = $query->latest()->paginate(12)->withQueryString();
-
-        // Ambil angkatan untuk filter dropdown
-        $angkatans = Angkatan::orderBy('tahun_ajaran', 'desc')->get();
-
-        return view('landing.direktori', compact('alumnis', 'angkatans'));
-    }
-
-    /**
-     * Tampilkan profil alumni detail (publik)
-     *
-     * @param Alumni $alumni
-     * @return View
-     */
-    public function profilAlumni(Alumni $alumni): View
-    {
-        // Load relasi jika belum di-load
-        $alumni->loadMissing(['angkatan', 'user', 'pendidikan', 'pekerjaan', 'fotos']);
-
-        // Pastikan hanya alumni yang verified yang bisa diakses
-        if ($alumni->status_verifikasi !== 'verified') {
-            abort(404);
-        }
-
-        return view('landing.profil', compact('alumni'));
+        return view('landing.index', compact('stats', 'faqs', 'testimonis'));
     }
 }

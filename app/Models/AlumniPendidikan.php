@@ -25,12 +25,12 @@ class AlumniPendidikan extends Model
     protected $fillable = [
         'alumni_id',
         'nama_instansi',
+        'fakultas',
         'jenjang',
         'program_studi',
         'tahun_masuk',
         'tahun_lulus',
         'is_ongoing',
-        'catatan',
     ];
 
     /**

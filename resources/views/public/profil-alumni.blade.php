@@ -3,6 +3,7 @@
 @section('title', 'Profil ' . $alumni->nama_lengkap)
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -466,6 +467,7 @@
         .info-grid { grid-template-columns: 1fr; }
     }
 </style>
+@endpush
 
 {{-- ── BACK BAR ─────────────────────────────────────────────────── --}}
 <div class="back-bar">
@@ -544,21 +546,29 @@
                         <div class="timeline">
                             @foreach($alumni->pendidikan as $edu)
                                 <div class="timeline-item">
-                                    <div class="timeline-marker"></div>
-                                    <div class="timeline-content">
-                                        <h6>{{ $edu->jenjang }}</h6>
-                                        <p><strong>{{ $edu->nama_instansi }}</strong></p>
-                                        @if($edu->is_ongoing)
-                                            <span class="timeline-tag timeline-tag-ongoing">
-                                                <i class="bi bi-hourglass-split"></i> Aktif
-                                            </span>
-                                        @else
-                                            <span class="timeline-tag timeline-tag-done">
-                                                <i class="bi bi-check-circle"></i> Lulus {{ $edu->tahun_lulus }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
+                                     <div class="timeline-marker"></div>
+                                     <div class="timeline-content">
+                                         <h6>{{ $edu->jenjang }}</h6>
+                                         <p class="mb-1"><strong>{{ $edu->nama_instansi }}</strong></p>
+                                         
+                                         @if($edu->fakultas)
+                                             <p class="small text-muted mb-0"><i class="bi bi-building me-1"></i> {{ $edu->fakultas }}</p>
+                                         @endif
+                                         @if($edu->program_studi)
+                                             <p class="small text-muted mb-2"><i class="bi bi-book me-1"></i> {{ $edu->program_studi }}</p>
+                                         @endif
+
+                                         @if($edu->is_ongoing)
+                                             <span class="timeline-tag timeline-tag-ongoing">
+                                                 <i class="bi bi-hourglass-split"></i> Sedang Menempuh (Masuk {{ $edu->tahun_masuk }})
+                                             </span>
+                                         @else
+                                             <span class="timeline-tag timeline-tag-done">
+                                                 <i class="bi bi-check-circle"></i> Lulus {{ $edu->tahun_lulus }}
+                                             </span>
+                                         @endif
+                                     </div>
+                                 </div>
                             @endforeach
                         </div>
                     </div>
@@ -575,15 +585,20 @@
                         <div class="timeline">
                             @foreach($alumni->pekerjaan as $job)
                                 <div class="timeline-item">
-                                    <div class="timeline-marker"></div>
-                                    <div class="timeline-content">
-                                        <h6>{{ $job->jabatan }}</h6>
-                                        <p><strong>{{ $job->nama_perusahaan }}</strong></p>
-                                        <span class="timeline-tag timeline-tag-work">
-                                            <i class="bi bi-briefcase-fill"></i> Aktif Bekerja
-                                        </span>
-                                    </div>
-                                </div>
+                                     <div class="timeline-marker"></div>
+                                     <div class="timeline-content">
+                                         <h6>{{ $job->jabatan }}</h6>
+                                         <p class="mb-2"><strong>{{ $job->nama_perusahaan }}</strong></p>
+                                         
+                                         @if($job->tahun_mulai)
+                                             <p class="small text-muted mb-2"><i class="bi bi-calendar3 me-1"></i> Sejak {{ $job->tahun_mulai }}</p>
+                                         @endif
+
+                                         <span class="timeline-tag timeline-tag-work">
+                                             <i class="bi bi-briefcase-fill"></i> Aktif Bekerja
+                                         </span>
+                                     </div>
+                                 </div>
                             @endforeach
                         </div>
                     </div>
@@ -608,7 +623,7 @@
         <div class="col-lg-4">
 
             {{-- Kontak --}}
-            @if($alumni->email || ($alumni->show_no_hp && $alumni->no_hp) || ($alumni->show_no_wa && $alumni->no_wa))
+            @if($alumni->email || ($alumni->show_no_hp && $alumni->no_hp))
                 <div class="contact-section">
                     <div class="contact-section-header">
                         <i class="bi bi-send"></i> Kontak
@@ -638,15 +653,15 @@
                         </div>
                     @endif
 
-                    @if($alumni->show_no_wa && $alumni->no_wa)
+                    @if($alumni->show_no_hp && $alumni->no_hp)
                         <div class="contact-item">
                             <div class="contact-icon" style="background:#16a34a;">
                                 <i class="bi bi-whatsapp"></i>
                             </div>
                             <div class="contact-details">
                                 <h6>WhatsApp</h6>
-                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $alumni->no_wa) }}" target="_blank">
-                                    {{ $alumni->no_wa }}
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $alumni->no_hp) }}" target="_blank">
+                                    {{ $alumni->no_hp }}
                                 </a>
                             </div>
                         </div>

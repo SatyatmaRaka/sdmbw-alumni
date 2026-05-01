@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Public\AlumniPublicController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
@@ -12,8 +11,6 @@ use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboard;
 use App\Http\Controllers\Alumni\ProfileController;
-use App\Http\Controllers\Alumni\DirektoriController;
-use App\Http\Controllers\Alumni\RiwayatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,18 +23,13 @@ Route::get('/direktori-alumni/{alumni}', [AlumniPublicController::class, 'show']
 
 /*
 |--------------------------------------------------------------------------
-| Guest Routes (Login & Register)
+| Guest Routes (Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
-
-    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
-
-    // Cek NISN (AJAX / Realtime)
-    Route::post('/cek-nisn', [RegisterController::class, 'cekNisn'])->name('cek.nisn');
+    Route::post('/login', [LoginController::class, 'login'])
+        ->middleware('throttle:5,1'); // max 5 percobaan login per menit per IP
 });
 
 /*
@@ -46,8 +38,6 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/direktori', [LandingController::class, 'direktori'])->name('landing.direktori');
-    Route::get('/profil-alumni/{alumni}', [LandingController::class, 'profilAlumni'])->name('landing.profil');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
@@ -67,34 +57,45 @@ Route::middleware(['auth', 'admin'])
         Route::resource('angkatan', AngkatanController::class);
 
         // Kelola Alumni
+        // PERBAIKAN B-1: Route statik HARUS dideklarasikan SEBELUM route wildcard {alumni}
+        // agar Laravel tidak salah mencocokkan /export-form atau /reset-password-form
+        // sebagai nilai parameter {alumni}.
         Route::prefix('alumni')->name('alumni.')->controller(AdminAlumni::class)->group(function () {
-            // List & Detail Alumni
+            // ── Static routes (HARUS di atas wildcard) ──────────────────────────
             Route::get('/', 'index')->name('index');
-            Route::get('/{alumni}', 'show')->name('show');
 
-            // Edit Alumni
+            // Form & Action: Reset password by NISN
+            Route::get('/reset-password-form', 'resetPasswordForm')->name('resetPasswordForm');
+            Route::post('/reset-password-nisn', 'resetPasswordByNisn')->name('resetPasswordByNisn');
+
+            // Form & Action: Export Excel
+            Route::get('/export-form', 'exportForm')->name('exportForm');
+            Route::post('/export', 'export')->name('export');
+
+            // Form & Action: Import Excel
+            Route::get('/import-form', 'importForm')->name('importForm');
+            Route::get('/import-template', 'downloadTemplate')->name('downloadTemplate');
+            Route::post('/import', 'import')->name('import');
+
+            // Bulk Action: Delete All
+            Route::post('/delete-all', 'deleteAll')->name('deleteAll');
+
+            // ── Wildcard routes (HARUS di bawah static) ─────────────────────────
+            Route::get('/{alumni}', 'show')->name('show');
             Route::get('/{alumni}/edit', 'edit')->name('edit');
             Route::put('/{alumni}', 'update')->name('update');
-
-            // Verifikasi Alumni
             Route::put('/{alumni}/verify', 'verify')->name('verify');
-
-            // Reset Password Alumni
-            Route::put('/{alumni}/reset-password', 'resetPassword')->name('resetPassword'); // Reset ke NISN
-            Route::get('/reset-password-form', 'resetPasswordForm')->name('resetPasswordForm'); // Form reset by NISN
-            Route::post('/reset-password-nisn', 'resetPasswordByNisn')->name('resetPasswordByNisn'); // Reset by NISN lookup
-
-            // Export Alumni
-            Route::get('/export-form', 'exportForm')->name('exportForm'); // Form export
-            Route::get('/export', 'export')->name('export'); // Download Excel
-
-            // Hapus Alumni Permanen
+            Route::put('/{alumni}/reset-password', 'resetPassword')->name('resetPassword');
             Route::delete('/{alumni}', 'destroy')->name('destroy');
         });
 
         // Laporan & Tracer Study
         Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('/laporan/angkatan/{angkatan}', [LaporanController::class, 'angkatan'])->name('laporan.angkatan');
+
+        // FAQ & Testimoni (CMS Publik)
+        Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->except(['show']);
+        Route::resource('testimonis', \App\Http\Controllers\Admin\TestimoniController::class)->except(['show']);
 
         // Activity Logs
         Route::prefix('logs')->name('logs.')->group(function () {
@@ -110,7 +111,7 @@ Route::middleware(['auth', 'admin'])
 | Alumni Routes (Role: alumni)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'alumni'])
+Route::middleware(['auth', 'alumni', 'alumni.onboarding'])
     ->prefix('alumni')
     ->name('alumni.')
     ->group(function () {
@@ -122,17 +123,13 @@ Route::middleware(['auth', 'alumni'])
         Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 
-        // Riwayat Pendidikan
-        Route::post('/riwayat-pendidikan', [RiwayatController::class, 'storePendidikan'])->name('pendidikan.store');
-        Route::delete('/riwayat-pendidikan/{pendidikan}', [RiwayatController::class, 'destroyPendidikan'])->name('pendidikan.destroy');
+        // Testimonial — Wajib diisi setelah profil lengkap
+        Route::get('/testimonial', [ProfileController::class, 'testimonialForm'])->name('testimonial.form');
+        Route::post('/testimonial', [ProfileController::class, 'storeTestimonial'])->name('testimonial.store');
 
-        // Riwayat Pekerjaan
-        Route::post('/riwayat-pekerjaan', [RiwayatController::class, 'storePekerjaan'])->name('pekerjaan.store');
-        Route::delete('/riwayat-pekerjaan/{pekerjaan}', [ProfileController::class, 'destroyPekerjaan'])->name('pekerjaan.destroy');
-
-        // Direktori Alumni
+        // Direktori Alumni (Unified with Public Controller)
         Route::prefix('direktori')->name('direktori.')->group(function () {
-            Route::get('/', [DirektoriController::class, 'index'])->name('index');
-            Route::get('/{alumni}', [DirektoriController::class, 'show'])->name('show');
+            Route::get('/', [AlumniPublicController::class, 'direktori'])->name('index');
+            Route::get('/{alumni}', [AlumniPublicController::class, 'show'])->name('show');
         });
     });

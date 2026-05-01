@@ -21,10 +21,9 @@ class AlumniPekerjaan extends Model
         'alumni_id',
         'nama_perusahaan',
         'jabatan',
-        'lokasi_perusahaan',
-        'gaji',
-        'tanggal_mulai',
-        'tanggal_berakhir',
+        'tahun_mulai',
+        'tahun_selesai',
+        'alamat_perusahaan',
         'is_current',
     ];
 
@@ -35,9 +34,6 @@ class AlumniPekerjaan extends Model
      */
     protected $casts = [
         'is_current' => 'boolean',
-        'tanggal_mulai' => 'date',
-        'tanggal_berakhir' => 'date',
-        'gaji' => 'decimal:2',
     ];
 
     /**

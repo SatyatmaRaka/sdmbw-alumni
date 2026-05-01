@@ -39,9 +39,9 @@ class Angkatan extends Model
     {
         parent::boot();
 
-        // Default ordering berdasarkan angka di nama_angkatan
+        // Default ordering berdasarkan tahun ajaran (lebih aman daripada parse string nama_angkatan)
         static::addGlobalScope('order', function ($query) {
-            $query->orderByRaw('CAST(SUBSTRING(nama_angkatan, 10) AS UNSIGNED) ASC');
+            $query->orderBy('tahun_ajaran', 'asc');
         });
     }
 

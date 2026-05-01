@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
     <link href="{{ asset('css/print.css') }}" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         :root {
@@ -35,7 +36,6 @@
             --radius:              14px;
         }
 
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -408,10 +408,10 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="sidebar-logo-wrap">
-                <i class="bi bi-shield-lock-fill"></i>
+                <i class="bi bi-mortarboard-fill"></i>
             </div>
-            <h4>Admin Panel</h4>
-            <small>SD Muhammadiyah BWK</small>
+            <h4>Sistem Alumni</h4>
+            <small>SD Muhammadiyah BW</small>
         </div>
 
         <div class="nav-section-label">Manajemen</div>
@@ -441,7 +441,25 @@
                 </li>
 
                 <div class="sidebar-divider"></div>
-                <div class="nav-section-label" style="margin-top:0.25rem;">Laporan</div>
+                <div class="nav-section-label" style="margin-top:0.25rem;">CMS Publik</div>
+                
+                <li>
+                    <a href="{{ route('admin.faqs.index') }}"
+                        class="{{ request()->routeIs('admin.faqs.*') ? 'active' : '' }}">
+                        <i class="bi bi-question-circle-fill"></i>
+                        <span>Kelola FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.testimonis.index') }}"
+                        class="{{ request()->routeIs('admin.testimonis.*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-quote-fill"></i>
+                        <span>Kelola Testimoni</span>
+                    </a>
+                </li>
+
+                <div class="sidebar-divider"></div>
+                <div class="nav-section-label" style="margin-top:0.25rem;">Laporan & Log</div>
 
                 <li>
                     <a href="{{ route('admin.laporan.index') }}"
@@ -461,33 +479,33 @@
         </nav>
     </aside>
 
-    <div class="main-content">
+    <div id="app">
+        <div class="main-content">
 
-        <header class="topbar">
-            <h5 class="topbar-title">@yield('page-title', 'Dashboard')</h5>
+            <header class="topbar">
+                <h5 class="topbar-title">@yield('page-title', 'Dashboard')</h5>
 
-            <div class="user-menu">
-                <div class="user-chip">
-                    <div class="user-avatar">
-                        {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                <div class="user-menu">
+                    <div class="user-chip">
+                        <div class="user-avatar">
+                            {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                        </div>
+                        <span>{{ Auth::user()->username }}</span>
                     </div>
-                    <span>{{ Auth::user()->username }}</span>
+
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn-logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="d-none d-sm-inline">Keluar</span>
+                        </button>
+                    </form>
                 </div>
+            </header>
 
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn-logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span class="d-none d-sm-inline">Keluar</span>
-                    </button>
-                </form>
+            <div class="content-body">
+                @yield('content')
             </div>
-        </header>
-
-        <div class="content-body">
-
-            @yield('content')
-
         </div>
     </div>
 

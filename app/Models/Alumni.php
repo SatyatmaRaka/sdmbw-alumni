@@ -22,7 +22,10 @@ class Alumni extends Model
     protected $fillable = [
         'user_id',
         'nisn',
+        'nipd',
         'nama_lengkap',
+        'nama_panggilan',
+        'jenis_kelamin',
         'angkatan_id',
         'tahun_lulus',
         'alamat',
@@ -32,6 +35,7 @@ class Alumni extends Model
         'harapan',
         'status_verifikasi',
         'is_profile_complete',
+        'jenjang_pendidikan_saat_ini',
     ];
 
     /**
@@ -172,23 +176,22 @@ class Alumni extends Model
      * Mengecek kelengkapan profil alumni
      * Alumni dianggap lengkap jika memiliki:
      * - Alamat dan No HP yang tidak kosong
-     * - Minimal 2 jenjang pendidikan wajib (SMP/MTS dan SMA/MA/SMK)
+     * - Minimal 1 riwayat pendidikan sesuai jenjang saat ini
      *
      * @return bool
      */
     public function isDataComplete(): bool
     {
-        // Validasi data kontak dasar
-        $hasBasicInfo = !empty(trim($this->alamat ?? ''))
-            && !empty(trim($this->no_hp ?? ''));
+        // 1. Validasi data kontak dasar (Wajib)
+        if (empty(trim($this->alamat ?? '')) || empty(trim($this->no_hp ?? ''))) {
+            return false;
+        }
 
-        // Menghitung jenjang pendidikan wajib yang sudah diisi
-        $requiredEducationCount = $this->pendidikan()
-            ->whereIn('jenjang', ['SMP/MTS', 'SMA/MA/SMK'])
-            ->select('jenjang')
-            ->distinct()
-            ->count();
+        // 2. Minimal harus ada 1 riwayat pendidikan (biasanya SD)
+        if ($this->pendidikan()->count() === 0) {
+            return false;
+        }
 
-        return $hasBasicInfo && ($requiredEducationCount >= 2);
+        return true;
     }
 }

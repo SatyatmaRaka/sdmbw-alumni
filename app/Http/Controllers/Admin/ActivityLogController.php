@@ -33,8 +33,8 @@ class ActivityLogController extends Controller
         // Mengambil data terbaru dengan pagination 30 data per halaman
         $logs = $query->latest()->paginate(30)->withQueryString();
 
-        // Ambil daftar unik action untuk menu dropdown filter
-        $actions = AdminLog::distinct()->pluck('action');
+        // Ambil daftar label action dari model
+        $actions = AdminLog::ACTION_LABELS;
 
         return view('admin.logs.index', compact('logs', 'actions'));
     }

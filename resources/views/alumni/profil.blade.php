@@ -3,6 +3,7 @@
 @section('title', 'Profil Alumni')
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -325,6 +326,7 @@
         display: block;
     }
 </style>
+@endpush
 
 {{-- ── BACK ── --}}
 <div class="mb-4">

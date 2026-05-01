@@ -12,12 +12,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistem Alumni') - SD Muhammadiyah Birrul Walidain Kudus</title>
 
+    {{-- 1. Bootstrap CSS (reset & components, NO layer — highest cascade priority) --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+
+    {{-- 2. Vite: Tailwind v4 (theme + utilities only, NO preflight) + app.js --}}
+    {{-- Dimuat SETELAH Bootstrap agar Tailwind tidak menimpa komponen Bootstrap --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        /* ── Design Tokens (alias dari app.css agar tersedia sebelum Vite load) ── */
         :root {
             --color-primary:       #1B3A52;
             --color-primary-light: #2a5378;
@@ -32,8 +37,9 @@
             --radius-md:           12px;
         }
 
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
+        /* ── Body Layout ──
+           Tidak ada universal reset (*) di sini — Bootstrap sudah handle itu.
+           Hanya set apa yang Bootstrap tidak cover. */
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--color-bg);
@@ -43,9 +49,7 @@
             color: var(--color-text);
         }
 
-        /* ──────────────────────────────────────────
-            NAVBAR
-        ────────────────────────────────────────── */
+        /* ── NAVBAR ────────────────────────────────────────────────────────── */
         .navbar-custom {
             background: var(--color-primary-dark);
             padding: 0;
@@ -54,7 +58,7 @@
             transition: var(--transition);
             position: sticky;
             top: 0;
-            z-index: 1030;
+            z-index: 1030; /* sejajar dengan Bootstrap modal z-index system */
         }
 
         /* scrolled state applied via JS */
@@ -344,6 +348,22 @@
                 display: block;
             }
         }
+
+        /* Fix Tailwind vs Bootstrap Collapse Conflict */
+        .navbar-collapse.collapse {
+            display: none;
+            visibility: visible !important;
+        }
+        .navbar-collapse.collapse.show {
+            display: block !important;
+            visibility: visible !important;
+        }
+        @media (min-width: 992px) {
+            .navbar-expand-lg .navbar-collapse.collapse {
+                display: flex !important;
+                visibility: visible !important;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -354,6 +374,10 @@
             <a class="navbar-brand-wrap" href="{{ route('landing.index') }}">
                 <div class="navbar-logo-box">
                     <img src="{{ asset('images/logo-sdmbw.png') }}" alt="Logo SDMBW">
+                </div>
+                <div class="d-flex flex-column ms-2 text-start">
+                    <span class="text-white fw-bold fs-6 lh-1 mb-1">Alumni SDMBW</span>
+                    <span class="text-white-50 lh-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">Portal Resmi</span>
                 </div>
             </a>
 
@@ -374,9 +398,6 @@
                         <li class="nav-item ms-lg-1">
                             <a class="btn-navbar-ghost nav-link" href="{{ route('login') }}">Masuk</a>
                         </li>
-                        <li class="nav-item ms-lg-2">
-                            <a href="{{ route('register') }}" class="btn btn-navbar-accent">Daftar Sekarang</a>
-                        </li>
                     @else
                         <li class="nav-item ms-lg-2">
                             <a class="nav-link" href="{{ Auth::user()->isAdmin()
@@ -391,9 +412,11 @@
         </div>
     </nav>
 
-    <main>
-        @yield('content')
-    </main>
+    <div id="app">
+        <main>
+            @yield('content')
+        </main>
+    </div>
 
     <footer class="footer">
         <div class="container">
@@ -413,7 +436,6 @@
                         <li><a href="{{ route('landing.index') }}"><i class="bi bi-chevron-right"></i> Beranda</a></li>
                         <li><a href="{{ route('public.direktori') }}"><i class="bi bi-chevron-right"></i> Direktori Alumni</a></li>
                         <li><a href="{{ route('login') }}"><i class="bi bi-chevron-right"></i> Masuk</a></li>
-                        <li><a href="{{ route('register') }}"><i class="bi bi-chevron-right"></i> Registrasi</a></li>
                     </ul>
                 </div>
 

@@ -4,6 +4,7 @@
 @section('page-title', 'Tambah Angkatan Baru')
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -268,6 +269,7 @@
         margin-top: 1px;
     }
 </style>
+@endpush
 
 <div class="row g-4">
 

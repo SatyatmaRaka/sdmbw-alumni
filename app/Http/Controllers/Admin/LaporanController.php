@@ -7,6 +7,7 @@ use App\Models\Alumni;
 use App\Models\Angkatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class LaporanController extends Controller
 {
@@ -15,51 +16,59 @@ class LaporanController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Statistik Umum
-        $stats = [
-            'total_alumni'         => Alumni::count(),
-            'alumni_verified'      => Alumni::where('status_verifikasi', 'verified')->count(),
-            'alumni_pending'       => Alumni::where('status_verifikasi', 'pending')->count(),
-            'alumni_rejected'      => Alumni::where('status_verifikasi', 'rejected')->count(),
-            'profil_lengkap'       => Alumni::where('is_profile_complete', true)->count(),
-            'profil_belum_lengkap' => Alumni::where('is_profile_complete', false)->count(),
-        ];
+        // 1. Statistik Umum — di-cache 10 menit
+        $stats = Cache::remember('laporan_general_stats', 600, function () {
+            return [
+                'total_alumni'         => Alumni::count(),
+                'alumni_verified'      => Alumni::where('status_verifikasi', 'verified')->count(),
+                'alumni_pending'       => Alumni::where('status_verifikasi', 'pending')->count(),
+                'alumni_rejected'      => Alumni::where('status_verifikasi', 'rejected')->count(),
+                'profil_lengkap'       => Alumni::where('is_profile_complete', true)->count(),
+                'profil_belum_lengkap' => Alumni::where('is_profile_complete', false)->count(),
+            ];
+        });
 
-        // 2. Statistik per Angkatan
-        $angkatanStats = Angkatan::withCount([
-            'alumni',
-            'alumni as verified_count' => function ($query) {
-                $query->where('status_verifikasi', 'verified');
-            },
-            'alumni as pending_count' => function ($query) {
-                $query->where('status_verifikasi', 'pending');
-            },
-            'alumni as complete_count' => function ($query) {
-                $query->where('is_profile_complete', true);
-            }
-        ])
-        ->orderBy('id', 'asc')
-        ->get();
-
-        // 3. Alumni berdasarkan Instansi Pendidikan Terpopuler
-        $pendidikanStats = DB::table('alumni_pendidikan')
-            ->select('nama_instansi as pendidikan_lanjutan', DB::raw('count(*) as total'))
-            ->whereNotNull('nama_instansi')
-            ->where('nama_instansi', '!=', '')
-            ->groupBy('nama_instansi')
-            ->orderBy('total', 'desc')
-            ->take(10)
+        // 2. Statistik per Angkatan — di-cache 10 menit
+        $angkatanStats = Cache::remember('laporan_angkatan_stats', 600, function () {
+            return Angkatan::withCount([
+                'alumni',
+                'alumni as verified_count' => function ($query) {
+                    $query->where('status_verifikasi', 'verified');
+                },
+                'alumni as pending_count' => function ($query) {
+                    $query->where('status_verifikasi', 'pending');
+                },
+                'alumni as complete_count' => function ($query) {
+                    $query->where('is_profile_complete', true);
+                }
+            ])
+            ->orderBy('id', 'asc')
             ->get();
+        });
 
-        // 4. Alumni berdasarkan Perusahaan/Pekerjaan Terpopuler
-        $pekerjaanStats = DB::table('alumni_pekerjaan')
-            ->select('nama_perusahaan as pekerjaan', DB::raw('count(*) as total'))
-            ->whereNotNull('nama_perusahaan')
-            ->where('nama_perusahaan', '!=', '')
-            ->groupBy('nama_perusahaan')
-            ->orderBy('total', 'desc')
-            ->take(10)
-            ->get();
+        // 3. Alumni berdasarkan Instansi Pendidikan Terpopuler — di-cache 10 menit
+        $pendidikanStats = Cache::remember('laporan_pendidikan_stats', 600, function () {
+            return DB::table('alumni_pendidikan')
+                ->select('nama_instansi as pendidikan_lanjutan', DB::raw('count(*) as total'))
+                ->whereNotNull('nama_instansi')
+                ->where('nama_instansi', '!=', '')
+                ->groupBy('nama_instansi')
+                ->orderBy('total', 'desc')
+                ->take(10)
+                ->get();
+        });
+
+        // 4. Alumni berdasarkan Perusahaan/Pekerjaan Terpopuler — di-cache 10 menit
+        $pekerjaanStats = Cache::remember('laporan_pekerjaan_stats', 600, function () {
+            return DB::table('alumni_pekerjaan')
+                ->select('nama_perusahaan as pekerjaan', DB::raw('count(*) as total'))
+                ->whereNotNull('nama_perusahaan')
+                ->where('nama_perusahaan', '!=', '')
+                ->groupBy('nama_perusahaan')
+                ->orderBy('total', 'desc')
+                ->take(10)
+                ->get();
+        });
 
         return view('admin.laporan.index', compact(
             'stats',
@@ -72,12 +81,10 @@ class LaporanController extends Controller
     /**
      * Laporan mendetail per angkatan tertentu
      */
-    public function angkatan(Request $request, $angkatanId)
+    public function angkatan(Request $request, Angkatan $angkatan)
     {
-        $angkatan = Angkatan::findOrFail($angkatanId);
-
         $alumniQuery = Alumni::with(['user', 'pendidikan', 'pekerjaan'])
-            ->where('angkatan_id', $angkatanId);
+            ->where('angkatan_id', $angkatan->id);
 
         // Filter status jika ada
         if ($request->filled('status')) {
@@ -168,5 +175,16 @@ class LaporanController extends Controller
         }
 
         return $text;
+    }
+
+    /**
+     * Hapus semua cache laporan agar data selalu up-to-date
+     */
+    public static function clearLaporanCache(): void
+    {
+        Cache::forget('laporan_general_stats');
+        Cache::forget('laporan_angkatan_stats');
+        Cache::forget('laporan_pendidikan_stats');
+        Cache::forget('laporan_pekerjaan_stats');
     }
 }

@@ -7,20 +7,28 @@ use App\Models\Angkatan;
 use App\Models\AdminLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Admin\LaporanController;
 
 class AngkatanController extends Controller
 {
     /**
      * Tampilkan daftar angkatan
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Mengambil data angkatan dengan jumlah alumni, diurutkan dari yang terlama ke terbaru
-        $angkatans = Angkatan::withCount('alumni')
-            ->orderBy('id', 'asc')
-            ->get();
+        $search = $request->input('search');
 
-        return view('admin.angkatan.index', compact('angkatans'));
+        $angkatans = Angkatan::withCount('alumni')
+            ->when($search, function($query, $search) {
+                return $query->where('nama_angkatan', 'like', "%{$search}%")
+                             ->orWhere('tahun_ajaran', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'asc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.angkatan.index', compact('angkatans', 'search'));
     }
 
     /**
@@ -56,6 +64,8 @@ class AngkatanController extends Controller
             $angkatan->id,
             "Menambah angkatan: {$angkatan->nama_angkatan}"
         );
+
+        $this->clearCache();
 
         return redirect()
             ->route('admin.angkatan.index')
@@ -99,6 +109,8 @@ class AngkatanController extends Controller
             $description
         );
 
+        $this->clearCache();
+
         return redirect()
             ->route('admin.angkatan.index')
             ->with('success', 'Angkatan berhasil diupdate!');
@@ -126,8 +138,24 @@ class AngkatanController extends Controller
             "Menghapus angkatan: {$namaAngkatan}"
         );
 
+        $this->clearCache();
+
         return redirect()
             ->route('admin.angkatan.index')
             ->with('success', 'Angkatan berhasil dihapus!');
+    }
+
+    /**
+     * Bersihkan semua cache yang bergantung pada data angkatan
+     */
+    private function clearCache(): void
+    {
+        // Clear Dashboard Cache
+        Cache::forget('admin_dashboard_stats');
+        Cache::forget('admin_dashboard_angkatan_stats');
+        
+        // Clear Laporan & Landing Cache
+        LaporanController::clearLaporanCache();
+        Cache::forget('landing_stats');
     }
 }

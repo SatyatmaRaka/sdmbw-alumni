@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         :root {
@@ -36,7 +37,7 @@
             --transition:          all 0.28s cubic-bezier(0.4,0,0.2,1);
         }
 
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -381,6 +382,56 @@
             .content-body { padding: 1rem; }
             .topbar h4 { font-size: 1.2rem; }
         }
+
+        /* ─── ONBOARDING STEPPER ─── */
+        .onboarding-stepper {
+            background: linear-gradient(135deg, #1B3A52 0%, #2a5378 100%);
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            color: white;
+            box-shadow: 0 4px 16px rgba(27,58,82,0.2);
+        }
+        .stepper-header { margin-bottom: 1rem; font-size: 0.92rem; }
+        .stepper-sub { color: rgba(255,255,255,0.6) !important; }
+        .stepper-steps { display: flex; align-items: center; gap: 0; }
+        .stepper-step {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0;
+        }
+        .step-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: 2px solid rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; color: rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+        .stepper-step.done .step-circle {
+            background: #16a34a; border-color: #16a34a; color: white;
+        }
+        .stepper-step.active .step-circle {
+            background: #EAE0CF; border-color: #EAE0CF; color: #1B3A52;
+            box-shadow: 0 0 0 4px rgba(234,224,207,0.25);
+            animation: pulse-step 1.8s infinite;
+        }
+        @keyframes pulse-step {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(234,224,207,0.25); }
+            50%       { box-shadow: 0 0 0 8px rgba(234,224,207,0.1); }
+        }
+        .step-label {
+            font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.55);
+            text-align: center; white-space: nowrap;
+        }
+        .stepper-step.active .step-label,
+        .stepper-step.done  .step-label { color: rgba(255,255,255,0.9); }
+        .stepper-line {
+            flex: 1; height: 2px; background: rgba(255,255,255,0.15);
+            margin-bottom: 22px; transition: background 0.3s;
+        }
+        .stepper-line.done { background: #16a34a; }
+        @media (max-width: 576px) {
+            .stepper-sub { display: none; }
+            .onboarding-stepper { padding: 0.85rem 1rem; }
+        }
     </style>
 
     @stack('styles')
@@ -441,52 +492,101 @@
     </aside>
 
     {{-- ===== MAIN CONTENT ===== --}}
-    <div class="main-content">
+    <div id="app">
+        <div class="main-content">
 
-        {{-- TOPBAR --}}
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="mobile-toggle" id="btnToggle">
-                    <i class="bi bi-list"></i>
-                </button>
-                <h4>@yield('title', 'Dashboard')</h4>
-            </div>
+            {{-- TOPBAR --}}
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-toggle" id="btnToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h4>@yield('title', 'Dashboard')</h4>
+                </div>
 
-            <div class="dropdown user-dropdown">
-                <div class="btn-user dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="user-info">
-                        <span class="name">{{ Auth::user()->alumni->nama_lengkap ?? Auth::user()->username }}</span>
-                        <span class="role">Alumni Verified</span>
+                <div class="dropdown user-dropdown">
+                    <div class="btn-user dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-info">
+                            <span class="name">{{ Auth::user()->alumni->nama_lengkap ?? Auth::user()->username }}</span>
+                            <span class="role">Alumni Verified</span>
+                        </div>
+                        <div class="avatar-circle">
+                            {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                        </div>
                     </div>
-                    <div class="avatar-circle">
-                        {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3"
+                        style="min-width: 200px;">
+                        <li class="p-1">
+                            <a class="dropdown-item py-2" href="{{ route('alumni.profile.edit') }}">
+                                <i class="bi bi-person me-2"></i> Profil Saya
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider opacity-50 my-1"></li>
+                        <li class="p-1">
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="dropdown-item py-2 text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Keluar
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+
+            {{-- CONTENT --}}
+            <main class="content-body">
+
+                {{-- ═══ ONBOARDING STEPPER (P2-5) ════════════════════════════════
+                     Tampil otomatis di halaman profil & testimoni saat onboarding.
+                     Disembunyikan setelah onboarding selesai.
+                ════════════════════════════════════════════════════════════════ --}}
+                @php
+                    $alumniUser  = Auth::user()->alumni ?? null;
+                    $isComplete  = $alumniUser?->is_profile_complete ?? false;
+                    $hasTestimoni = $alumniUser
+                        ? \App\Models\Testimoni::where('alumni_id', $alumniUser->id)->exists()
+                        : false;
+                    $onProfilePage     = request()->routeIs('alumni.profile.edit');
+                    $onTestimonialPage = request()->routeIs('alumni.testimonial.form');
+                    $showStepper       = $onProfilePage || $onTestimonialPage;
+                    $step              = $onProfilePage ? 2 : ($onTestimonialPage ? 3 : 0);
+                @endphp
+
+                @if($showStepper)
+                <div class="onboarding-stepper mx-4 mt-3 mb-1">
+                    <div class="stepper-header">
+                        <i class="bi bi-lightning-charge-fill me-2 text-warning"></i>
+                        <strong>Aktivasi Akun</strong>
+                        <span class="stepper-sub ms-2 text-muted small">— Selesaikan langkah berikut untuk mengaktifkan akun Anda</span>
+                    </div>
+                    <div class="stepper-steps">
+                        {{-- Step 1: Login --}}
+                        <div class="stepper-step done">
+                            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+                            <div class="step-label">Login</div>
+                        </div>
+                        <div class="stepper-line done"></div>
+
+                        {{-- Step 2: Profil --}}
+                        <div class="stepper-step {{ $step >= 2 ? ($isComplete ? 'done' : 'active') : '' }}">
+                            <div class="step-circle">{{ $isComplete ? '' : '2' }}@if($isComplete)<i class="bi bi-check-lg"></i>@endif</div>
+                            <div class="step-label">Lengkapi Profil</div>
+                        </div>
+                        <div class="stepper-line {{ $isComplete ? 'done' : '' }}"></div>
+
+                        {{-- Step 3: Testimoni --}}
+                        <div class="stepper-step {{ $onTestimonialPage ? 'active' : ($hasTestimoni ? 'done' : '') }}">
+                            <div class="step-circle">{{ $hasTestimoni ? '' : '3' }}@if($hasTestimoni)<i class="bi bi-check-lg"></i>@endif</div>
+                            <div class="step-label">Testimoni</div>
+                        </div>
                     </div>
                 </div>
-                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3"
-                    style="min-width: 200px;">
-                    <li class="p-1">
-                        <a class="dropdown-item py-2" href="{{ route('alumni.profile.edit') }}">
-                            <i class="bi bi-person me-2"></i> Profil Saya
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider opacity-50 my-1"></li>
-                    <li class="p-1">
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="dropdown-item py-2 text-danger">
-                                <i class="bi bi-box-arrow-right me-2"></i> Keluar
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </header>
+                @endif
 
-        {{-- CONTENT --}}
-        <main class="content-body">
-
-            @yield('content')
-        </main>
+                @yield('content')
+            </main>
+        </div>
     </div>
 
     {{-- Toast Container --}}

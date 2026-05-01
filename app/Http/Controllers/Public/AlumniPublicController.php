@@ -11,52 +11,57 @@ use DB;
 class AlumniPublicController extends Controller
 {
     /**
-     * Menampilkan direktori alumni publik dengan filter dinamis
+     * Menampilkan direktori alumni dengan filter dinamis.
+     * Dapat diakses oleh publik (guest) maupun alumni yang login.
      */
     public function direktori(Request $request)
     {
-        $query = Alumni::where('status_verifikasi', 'verified');
+        // P1-2 FIX: Hanya tampilkan alumni yang belum ditolak (pending atau verified)
+        // Alumni dengan status 'rejected' TIDAK ditampilkan di direktori publik.
+        $query = Alumni::with(['fotos', 'angkatan'])
+            ->where('status_verifikasi', '!=', 'rejected');
 
-        // Search berdasarkan nama
+        // Search berdasarkan Nama atau NISN
         if ($request->filled('search')) {
-            $query->where('nama_lengkap', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%");
+            });
         }
 
-        // Search berdasarkan NISN
-        if ($request->filled('nisn')) {
-            $query->where('nisn', 'like', '%' . $request->nisn . '%');
+        // Filter by Angkatan
+        if ($request->filled('angkatan_id')) {
+            $query->where('angkatan_id', $request->angkatan_id);
         }
 
-        // Filter by angkatan (berdasarkan angkatan_id)
-        if ($request->filled('angkatan')) {
-            $query->where('angkatan_id', $request->angkatan);
+        // Filter by Jenis Kelamin
+        if ($request->filled('jenis_kelamin')) {
+            $query->where('jenis_kelamin', $request->jenis_kelamin);
         }
 
-        // Sorting (opsional: urutkan berdasarkan nama)
-        $alumni = $query->with('fotos', 'angkatan')
+        $alumni = $query->orderBy('angkatan_id', 'asc')
             ->orderBy('nama_lengkap', 'asc')
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
-        // Ambil semua angkatan untuk dropdown filter
-        // Urutkan berdasarkan nomor angkatan (extract dari nama_angkatan)
-        // Contoh: "Angkatan 1" -> 1, "Angkatan 10" -> 10
-        $angkatanList = Angkatan::orderByRaw("CAST(REGEXP_SUBSTR(nama_angkatan, '[0-9]+') AS UNSIGNED) ASC")->get();
+        // Ambil daftar angkatan untuk dropdown filter
+        // Urutkan berdasarkan urutan angkatan (numeric)
+        $angkatanList = Angkatan::get();
 
-        return view('public.direktori-alumni', compact('alumni', 'angkatanList'));
+        return view('public.direktori-alumni', [
+            'alumni' => $alumni,
+            'angkatanList' => $angkatanList
+        ]);
     }
 
     /**
-     * Menampilkan detail profil alumni publik
+     * Menampilkan detail profil alumni (publik)
      */
     public function show(Alumni $alumni)
     {
-        // Hanya tampilkan alumni yang sudah diverifikasi
-        if ($alumni->status_verifikasi !== 'verified') {
-            abort(404, 'Alumni tidak ditemukan');
-        }
-
-        // Load relasi
-        $alumni->load('fotos', 'angkatan', 'pendidikan', 'pekerjaan');
+        // Load semua relasi yang diperlukan
+        $alumni->load(['fotos', 'angkatan', 'pendidikan', 'pekerjaan']);
 
         return view('public.profil-alumni', compact('alumni'));
     }

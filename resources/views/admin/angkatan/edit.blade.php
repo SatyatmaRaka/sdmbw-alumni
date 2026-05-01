@@ -4,6 +4,7 @@
 @section('page-title', 'Edit Angkatan')
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -295,6 +296,7 @@
         word-break: break-word;
     }
 </style>
+@endpush
 
 <div class="row g-4">
 

@@ -7,8 +7,11 @@ use App\Models\Alumni;
 use App\Models\Angkatan;
 use App\Models\AdminLog;
 use App\Models\User;
+use App\Http\Requests\UpdateAdminAlumniRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Admin\LaporanController;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -19,13 +22,18 @@ class AlumniController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Alumni::with(['user', 'angkatan', 'pendidikan', 'pekerjaan', 'fotos']);
+        // PERBAIKAN: Hanya memuat relasi yang benar-benar ditampilkan di tabel
+        // untuk menghemat konsumsi RAM server (menghindari N+1 Over-fetching)
+        $query = Alumni::with(['user', 'angkatan']);
 
         if ($request->filled('status')) {
             $query->where('status_verifikasi', $request->status);
         }
         if ($request->filled('angkatan_id')) {
             $query->where('angkatan_id', $request->angkatan_id);
+        }
+        if ($request->filled('jenis_kelamin')) {
+            $query->where('jenis_kelamin', $request->jenis_kelamin);
         }
         if ($request->filled('complete')) {
             $query->where('is_profile_complete', $request->complete === '1');
@@ -39,7 +47,7 @@ class AlumniController extends Controller
         }
 
         $alumnis   = $query->latest()->paginate(20)->withQueryString();
-        $angkatans = Angkatan::orderByRaw('CAST(SUBSTRING(nama_angkatan, 10) AS UNSIGNED) ASC')->get();
+        $angkatans = Angkatan::get();
 
         return view('admin.alumni.index', compact('alumnis', 'angkatans'));
     }
@@ -53,29 +61,18 @@ class AlumniController extends Controller
     public function edit(Alumni $alumni)
     {
         $alumni->load(['user', 'angkatan', 'pendidikan', 'pekerjaan', 'fotos']);
-        $angkatans = Angkatan::orderByRaw('CAST(SUBSTRING(nama_angkatan, 10) AS UNSIGNED) ASC')->get();
+        $angkatans = Angkatan::get();
         return view('admin.alumni.edit', compact('alumni', 'angkatans'));
     }
 
-    public function update(Request $request, Alumni $alumni)
+    public function update(UpdateAdminAlumniRequest $request, Alumni $alumni)
     {
-        $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'nisn'         => 'required|string|max:20|unique:alumni,nisn,' . $alumni->id,
-            'angkatan_id'  => 'required|exists:angkatan,id',
-            'tahun_lulus'  => 'required|numeric|digits:4',
-            'alamat'       => 'nullable|string',
-            'no_hp'        => 'nullable|numeric|digits_between:10,14',
-            'email'        => 'nullable|email|max:255',
-            'harapan'      => 'nullable|string',
-        ]);
+        // Validasi ditangani oleh UpdateAdminAlumniRequest
+        $validated = $request->validated();
 
         DB::beginTransaction();
         try {
-            $alumni->update($request->only([
-                'nama_lengkap', 'nisn', 'angkatan_id',
-                'tahun_lulus', 'alamat', 'no_hp', 'email', 'harapan',
-            ]));
+            $alumni->update($validated);
 
             AdminLog::log(
                 Auth::id(),
@@ -86,6 +83,7 @@ class AlumniController extends Controller
             );
 
             DB::commit();
+            $this->clearDashboardCache();
             return redirect()->route('admin.alumni.show', $alumni)
                 ->with('success', 'Data alumni berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -144,7 +142,13 @@ class AlumniController extends Controller
 
             AdminLog::log(Auth::id(), $action, 'alumni', $alumni->id, $description);
 
+            // Fitur pengiriman Email Notifikasi (Dinonaktifkan)
+            // Mengingat server belum memiliki konfigurasi SMTP, proses verifikasi 
+            // sekarang murni mengubah status di sistem (in-app logic) tanpa mengirim email
+            // agar tidak terjadi timeout atau error.
+
             DB::commit();
+            $this->clearDashboardCache();
 
             $message = match($status) {
                 'verified' => 'Alumni berhasil diverifikasi dan akun diaktifkan.',
@@ -173,6 +177,7 @@ class AlumniController extends Controller
 
             $alumni->user->update([
                 'password' => Hash::make($alumni->nisn),
+                'must_change_password' => true,
             ]);
 
             AdminLog::log(
@@ -184,6 +189,7 @@ class AlumniController extends Controller
             );
 
             DB::commit();
+            $this->clearDashboardCache();
             return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset ke NISN.");
         } catch (\Exception $e) {
             DB::rollBack();
@@ -200,12 +206,12 @@ class AlumniController extends Controller
     {
         $request->validate([
             'nisn'     => 'required|string|exists:alumni,nisn',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed',
         ], [
             'nisn.required'      => 'NISN wajib diisi',
             'nisn.exists'        => 'NISN tidak ditemukan dalam sistem',
             'password.required'  => 'Password wajib diisi',
-            'password.min'       => 'Password minimal 6 karakter',
+            'password.min'       => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak sesuai',
         ]);
 
@@ -219,6 +225,7 @@ class AlumniController extends Controller
 
             $alumni->user->update([
                 'password' => Hash::make($request->password),
+                'must_change_password' => true,
             ]);
 
             AdminLog::log(
@@ -230,6 +237,7 @@ class AlumniController extends Controller
             );
 
             DB::commit();
+            $this->clearDashboardCache();
             return redirect()->route('admin.alumni.resetPasswordForm')
                 ->with('success', "Password alumni NISN {$request->nisn} ({$alumni->nama_lengkap}) berhasil direset!");
         } catch (\Exception $e) {
@@ -265,11 +273,140 @@ class AlumniController extends Controller
             );
 
             DB::commit();
+            $this->clearDashboardCache();
             return redirect()->route('admin.alumni.index')
                 ->with('success', 'Data alumni berhasil dihapus permanen!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
+    }
+
+    public function exportForm()
+    {
+        $angkatans = Angkatan::get();
+        return view('admin.alumni.export', compact('angkatans'));
+    }
+
+    public function export(Request $request)
+    {
+        $filters = $request->only(['status', 'angkatan_id', 'complete']);
+        
+        $timestamp = now()->format('Y-m-d_H-i-s');
+        $fileName = "Data_Alumni_{$timestamp}.xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\AlumniExport($filters), 
+            $fileName
+        );
+    }
+
+    public function importForm()
+    {
+        return view('admin.alumni.import');
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\AlumniTemplateExport, 
+            'template_import_alumni.xlsx'
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // max 5MB
+        ], [
+            'file.required' => 'File Excel wajib diunggah',
+            'file.mimes' => 'Format file harus berupa Excel (.xlsx, .xls) atau CSV',
+            'file.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        $filePath = null;
+        try {
+            // Simpan file sementara untuk diproses
+            $filePath = $request->file('file')->store('imports');
+            
+            $import = new \App\Imports\AlumniImport(Auth::id());
+            \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
+
+            $this->clearDashboardCache();
+            
+            return redirect()->route('admin.alumni.index')
+                ->with('success', 'Data alumni berhasil di-import! Silakan cek daftar di bawah.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Import initiation failed: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memulai proses import. Silakan coba lagi atau hubungi administrator.');
+        } finally {
+            // P1-5 FIX: Selalu hapus file sementara setelah proses selesai
+            // untuk mencegah penumpukan file di storage/imports/
+            if ($filePath && \Illuminate\Support\Facades\Storage::exists($filePath)) {
+                \Illuminate\Support\Facades\Storage::delete($filePath);
+            }
+        }
+    }
+
+    /**
+     * Hapus seluruh data alumni dari sistem (Permanen)
+     * Fitur ini berisiko tinggi, sehingga memerlukan konfirmasi teks khusus.
+     */
+    public function deleteAll(Request $request)
+    {
+        $request->validate([
+            'confirmation' => 'required|string|in:HAPUS SEMUA DATA',
+        ], [
+            'confirmation.in' => 'Kata konfirmasi tidak sesuai. Ketik "HAPUS SEMUA DATA" untuk melanjutkan.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // 1. Hapus data relasi (Pendidikan, Pekerjaan, Foto)
+            DB::table('alumni_pendidikan')->delete();
+            DB::table('alumni_pekerjaan')->delete();
+            DB::table('alumni_fotos')->delete();
+            
+            // 2. Hapus Akun User (Hanya yang rolenya 'alumni')
+            User::where('role', 'alumni')->forceDelete();
+            
+            // 3. Hapus Data Alumni
+            Alumni::query()->forceDelete();
+
+            // 4. Catat Log
+            AdminLog::log(
+                Auth::id(),
+                AdminLog::ACTION_DELETE_ALL_ALUMNI,
+                'alumni',
+                null,
+                "MENGHAPUS SELURUH DATA ALUMNI DAN AKUN TERKAIT DARI SISTEM SECARA PERMANEN."
+            );
+
+            DB::commit();
+            $this->clearDashboardCache();
+
+            return redirect()->route('admin.alumni.index')
+                ->with('success', 'Seluruh data alumni berhasil dihapus secara permanen.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Bulk delete failed: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus data masal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hapus semua cache dashboard admin agar statistik selalu up-to-date
+     * setelah ada perubahan data alumni.
+     */
+    private function clearDashboardCache(): void
+    {
+        Cache::forget('admin_dashboard_stats');
+        Cache::forget('admin_dashboard_recent_alumni');
+        Cache::forget('admin_dashboard_angkatan_stats');
+        Cache::forget('admin_dashboard_recent_updates');
+        
+        // Bersihkan juga cache laporan dan landing
+        LaporanController::clearLaporanCache();
+        Cache::forget('landing_stats');
     }
 }

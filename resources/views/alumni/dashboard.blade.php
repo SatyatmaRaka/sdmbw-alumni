@@ -3,6 +3,7 @@
 @section('title', 'Dashboard Alumni')
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -416,116 +417,35 @@
         .progress-items { grid-template-columns: 1fr; }
     }
 </style>
+@endpush
 
 <div class="row g-4">
 
     {{-- ── LEFT MAIN ── --}}
     <div class="col-lg-8">
 
-        {{-- STATUS AKUN --}}
-        <div class="card-section">
-            <div class="card-section-header">
-                <i class="bi bi-shield-check"></i> Status Akun
+        {{-- WELCOME CARD --}}
+        <div class="card-section border-0 position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #1B3A52 0%, #2a5378 100%); color: white;">
+            {{-- Decorative pattern --}}
+            <div style="position: absolute; right: -20px; top: -30px; opacity: 0.1;">
+                <i class="bi bi-mortarboard-fill" style="font-size: 10rem;"></i>
             </div>
-            <div class="card-section-body">
-
-                {{-- Status Pills --}}
-                <div class="d-flex flex-wrap gap-4 mb-1">
-                    <div>
-                        <span class="status-sublabel">Verifikasi</span>
-                        @switch($alumni->status_verifikasi)
-                            @case('verified')
-                                <span class="status-pill pill-verified"><i class="bi bi-patch-check-fill"></i> Terverifikasi</span>
-                                @break
-                            @case('pending')
-                                <span class="status-pill pill-pending"><i class="bi bi-clock-fill"></i> Menunggu Verifikasi</span>
-                                @break
-                            @default
-                                <span class="status-pill pill-rejected"><i class="bi bi-x-circle-fill"></i> Ditolak</span>
-                        @endswitch
-                    </div>
-                    <div>
-                        <span class="status-sublabel">Kelengkapan</span>
-                        @if($alumni->is_profile_complete)
-                            <span class="status-pill pill-complete"><i class="bi bi-check-all"></i> Data Lengkap</span>
-                        @else
-                            <span class="status-pill pill-incomplete"><i class="bi bi-exclamation-triangle-fill"></i> Belum Lengkap</span>
-                        @endif
-                    </div>
+            
+            <div class="card-section-body d-flex align-items-center gap-4 p-4 position-relative z-1">
+                <div class="d-none d-sm-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="bi bi-stars" style="font-size: 2.2rem; color: #EAE0CF;"></i>
                 </div>
-
-                @if($alumni->status_verifikasi === 'pending')
-                    <div class="alert-custom alert-info-custom">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <div><strong>Info:</strong> Akun Anda sedang ditinjau Admin. Silakan lengkapi biodata.</div>
-                    </div>
-                @endif
-
-                @if(!$alumni->is_profile_complete)
-                    <div class="alert-custom alert-warning-custom">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <div>
-                            <strong>Perhatian:</strong> Profil Anda belum lengkap.
-                            <a href="{{ route('alumni.profile.edit') }}" class="alert-action">
-                                Lengkapi Sekarang <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- Progress --}}
-                @php
-                    $score = 0; $items = [];
-                    if (!empty($alumni->alamat))  { $score += 10; $items['Alamat'] = true;  } else { $items['Alamat'] = false; }
-                    if (!empty($alumni->no_hp))   { $score += 10; $items['No HP'] = true;   } else { $items['No HP'] = false; }
-                    if (!empty($alumni->email))   { $score += 10; $items['Email'] = true;   } else { $items['Email'] = false; }
-                    if (!empty($alumni->harapan)) { $score += 10; $items['Harapan'] = true; } else { $items['Harapan'] = false; }
-                    $hasFoto = $alumni->fotos->where('is_main', true)->first();
-                    if ($hasFoto) { $score += 15; $items['Foto Profil'] = true; } else { $items['Foto Profil'] = false; }
-                    if ($alumni->pendidikan->count() > 0) { $score += 30; $items['Riwayat Pendidikan'] = true; } else { $items['Riwayat Pendidikan'] = false; }
-                    if ($alumni->pekerjaan->count() > 0)  { $score += 15; $items['Riwayat Pekerjaan'] = true;  } else { $items['Riwayat Pekerjaan'] = false; }
-
-                    if ($score >= 80) {
-                        $barClass = 'fill-success'; $msgStyle = 'color:var(--success)';
-                        $message = '🎉 Profil Anda sudah sangat lengkap!';
-                    } elseif ($score >= 50) {
-                        $barClass = 'fill-warning'; $msgStyle = 'color:var(--warning)';
-                        $message = '💪 Hampir lengkap! Tambahkan beberapa data lagi.';
-                    } else {
-                        $barClass = 'fill-danger'; $msgStyle = 'color:var(--danger)';
-                        $message = '📝 Profil belum lengkap. Segera lengkapi data Anda.';
-                    }
-                @endphp
-
-                <div class="progress-wrap">
-                    <div class="progress-header">
-                        <small>Kelengkapan Profil</small>
-                        <small style="{{ $msgStyle }}; font-weight:800;">{{ $score }}%</small>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill {{ $barClass }}" style="width:{{ $score }}%"
-                             role="progressbar" aria-valuenow="{{ $score }}" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <p class="progress-message" style="{{ $msgStyle }}">{{ $message }}</p>
-
-                    <div class="progress-items">
-                        @foreach($items as $label => $done)
-                            <div class="progress-item {{ $done ? 'done' : 'undone' }}">
-                                <i class="bi {{ $done ? 'bi-check-circle-fill' : 'bi-circle' }}" style="font-size:0.7rem;"></i>
-                                {{ $label }}
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @if($score < 100)
-                        <a href="{{ route('alumni.profile.edit') }}" class="btn-complete">
-                            <i class="bi bi-pencil-square"></i> Lengkapi Profil Sekarang
-                        </a>
-                    @endif
+                <div>
+                    <h4 class="fw-bold mb-2" style="font-family: 'DM Serif Display', serif; color: #EAE0CF;">Selamat Datang, {{ explode(' ', $alumni->nama_lengkap)[0] }}!</h4>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.85); font-size: 0.95rem; line-height: 1.6;">
+                        Senang melihat Anda kembali. Pastikan informasi pendidikan dan karir Anda selalu *up-to-date* untuk memperluas jaringan alumni SD Muhammadiyah Birrul Walidain.
+                    </p>
                 </div>
-
             </div>
         </div>
+
+        {{-- STATUS AKUN --}}
+        <dashboard-stats :data-prop="{{ json_encode($alumni) }}"></dashboard-stats>
 
         {{-- BIODATA --}}
         <div class="card-section">
@@ -581,8 +501,11 @@
                                 <div class="timeline-icon icon-edu"><i class="bi bi-mortarboard-fill"></i></div>
                                 <div class="timeline-content">
                                     <h6>{{ $edu->jenjang }}: {{ $edu->nama_instansi }}</h6>
-                                    @if($edu->jenjang === 'Perguruan Tinggi' && $edu->program_studi)
-                                        <p>Prodi: {{ $edu->program_studi }}</p>
+                                    @if($edu->fakultas)
+                                        <p class="small text-muted mb-0"><i class="bi bi-building me-1"></i> {{ $edu->fakultas }}</p>
+                                    @endif
+                                    @if($edu->program_studi)
+                                        <p class="small text-muted mb-1"><i class="bi bi-book me-1"></i> {{ $edu->program_studi }}</p>
                                     @endif
                                     @if($edu->is_ongoing)
                                         <span class="tag tag-ongoing"><i class="bi bi-hourglass-split"></i> Aktif — Masuk {{ $edu->tahun_masuk }}</span>
@@ -606,7 +529,10 @@
                                 <div class="timeline-icon icon-work"><i class="bi bi-briefcase-fill"></i></div>
                                 <div class="timeline-content">
                                     <h6>{{ $job->nama_perusahaan }}</h6>
-                                    <p>{{ $job->jabatan }}</p>
+                                    <p class="mb-1">{{ $job->jabatan }}</p>
+                                    @if($job->tahun_mulai)
+                                        <p class="small text-muted mb-2"><i class="bi bi-calendar3 me-1"></i> Sejak {{ $job->tahun_mulai }}</p>
+                                    @endif
                                     <span class="tag tag-work"><i class="bi bi-circle-fill" style="font-size:0.35rem;"></i> Aktif</span>
                                 </div>
                             </div>

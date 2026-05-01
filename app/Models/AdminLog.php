@@ -47,6 +47,8 @@ class AdminLog extends Model
     const ACTION_DELETE_ALUMNI      = 'delete_alumni';
     const ACTION_RESET_PASSWORD     = 'reset_password';
     const ACTION_RESET_PASSWORD_NISN = 'reset_password_nisn';
+    const ACTION_EXPORT_ALUMNI      = 'export_alumni';
+    const ACTION_DELETE_ALL_ALUMNI  = 'delete_all_alumni';
 
     /*
     |--------------------------------------------------------------------------
@@ -63,6 +65,8 @@ class AdminLog extends Model
         'reset_password'      => 'Reset Password',
         'reset_password_nisn' => 'Reset Password (NISN)',
         'update_status_alumni'=> 'Ubah Status Alumni',
+        'export_alumni'       => 'Export Excel',
+        'delete_all_alumni'   => 'Hapus Masal Alumni',
     ];
 
     /*
@@ -79,6 +83,8 @@ class AdminLog extends Model
         'reset_password'      => 'warning',
         'reset_password_nisn' => 'warning',
         'update_status_alumni'=> 'info',
+        'export_alumni'       => 'success',
+        'delete_all_alumni'   => 'danger',
     ];
 
     /*

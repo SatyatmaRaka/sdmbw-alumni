@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Admin')
 @section('page-title', 'Ringkasan Sistem')
 
-@section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -322,53 +322,12 @@
     .summary-alert h6 { font-weight: 700; color: var(--primary); margin-bottom: 3px; font-size: 0.88rem; }
     .summary-alert p  { font-size: 0.83rem; color: #64748b; margin: 0; }
 </style>
+@endpush
+
+@section('content')
 
 {{-- ── STAT CARDS ── --}}
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <a href="{{ route('admin.alumni.index') }}" class="stat-card stat-card-primary">
-            <div class="stat-card-inner">
-                <i class="bi bi-people-fill stat-icon"></i>
-                <span class="stat-number">{{ number_format($stats['total_alumni']) }}</span>
-                <p class="stat-label">Total Alumni</p>
-            </div>
-        </a>
-    </div>
-
-    <div class="col-6 col-lg-3">
-        <a href="{{ route('admin.alumni.index', ['status' => 'verified']) }}" class="stat-card stat-card-success">
-            <div class="stat-card-inner">
-                <i class="bi bi-check-circle-fill stat-icon"></i>
-                <span class="stat-number">{{ number_format($stats['alumni_verified']) }}</span>
-                <p class="stat-label">Terverifikasi</p>
-            </div>
-        </a>
-    </div>
-
-    <div class="col-6 col-lg-3">
-        <a href="{{ route('admin.alumni.index', ['status' => 'pending']) }}"
-           class="stat-card stat-card-warning" style="position:relative;">
-            @if($stats['alumni_pending'] > 0)
-                <span class="stat-badge">{{ $stats['alumni_pending'] }}</span>
-            @endif
-            <div class="stat-card-inner">
-                <i class="bi bi-clock-fill stat-icon"></i>
-                <span class="stat-number">{{ number_format($stats['alumni_pending']) }}</span>
-                <p class="stat-label">Butuh Verifikasi</p>
-            </div>
-        </a>
-    </div>
-
-    <div class="col-6 col-lg-3">
-        <a href="{{ route('admin.alumni.index', ['complete' => '1']) }}" class="stat-card stat-card-info">
-            <div class="stat-card-inner">
-                <i class="bi bi-person-check-fill stat-icon"></i>
-                <span class="stat-number">{{ number_format($stats['profil_lengkap']) }}</span>
-                <p class="stat-label">Profil Lengkap</p>
-            </div>
-        </a>
-    </div>
-</div>
+<admin-stats :data-prop="{{ json_encode($stats) }}"></admin-stats>
 
 {{-- ── MAIN TABLES ── --}}
 <div class="row g-3">
@@ -460,13 +419,7 @@
                             </div>
                         </div>
                         <div>
-                            @if($alumni->status_verifikasi === 'verified')
-                                <span class="v-pill v-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
-                            @elseif($alumni->status_verifikasi === 'pending')
-                                <span class="v-pill v-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
-                            @else
-                                <span class="v-pill v-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
-                            @endif
+                            <span class="v-pill v-verified"><i class="bi bi-patch-check-fill"></i> Terdaftar</span>
                         </div>
                     </div>
                 @empty
@@ -481,15 +434,16 @@
 
 </div>
 
+{{-- ── ANALYTICAL CHARTS ── --}}
+<admin-charts :stats="{{ json_encode($stats) }}" :angkatan-data="{{ json_encode($angkatanStats) }}"></admin-charts>
+
 {{-- ── SUMMARY ── --}}
 <div class="summary-alert">
     <i class="bi bi-info-circle-fill"></i>
     <div>
         <h6>Ringkasan Alumni</h6>
         <p>
-            Sistem mencatat <strong>{{ $stats['total_alumni'] }}</strong> total alumni dengan
-            <strong>{{ $stats['alumni_verified'] }}</strong> sudah terverifikasi dan
-            <strong>{{ $stats['alumni_pending'] }}</strong> menunggu verifikasi.
+            Sistem mencatat <strong>{{ $stats['total_alumni'] }}</strong> total alumni yang telah terdaftar dan aktif dalam database.
         </p>
     </div>
 </div>

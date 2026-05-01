@@ -3,6 +3,7 @@
 @section('title', 'Direktori Alumni')
 
 @section('content')
+@push('styles')
 <style>
     :root {
         --primary:       #1B3A52;
@@ -272,20 +273,7 @@
         color: rgba(255,255,255,0.2);
     }
 
-    .alumni-card-badge {
-        position: absolute;
-        top: 0.9rem; right: 0.9rem;
-        background: var(--accent);
-        color: var(--primary-dark);
-        padding: 0.3rem 0.75rem;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        z-index: 10;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
+    /* .alumni-card-badge removed as per request to simplify UI */
 
     /* body */
     .alumni-card-body {
@@ -470,6 +458,7 @@
         .filter-section { padding: 1.5rem; }
     }
 </style>
+@endpush
 
 {{-- ── HERO ───────────────────────────────────────────────────── --}}
 <div class="hero-direktori">
@@ -492,40 +481,47 @@
             </div>
 
             <form action="{{ route('public.direktori') }}" method="GET">
-                <div class="filter-row">
+                <div class="filter-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 1.25rem; align-items: flex-end;">
                     {{-- Nama --}}
-                    <div class="mb-3 mb-md-0">
-                        <label class="filter-label"><i class="bi bi-person me-1"></i> Cari Nama</label>
+                    <div>
+                        <label class="filter-label"><i class="bi bi-person me-1"></i> Cari Nama / NISN</label>
                         <input type="text" name="search" class="form-control"
-                            placeholder="Masukkan nama alumni..."
+                            placeholder="Masukkan nama..."
                             value="{{ request('search') }}">
                     </div>
 
                     {{-- Angkatan --}}
-                    <div class="mb-3 mb-md-0">
+                    <div>
                         <label class="filter-label"><i class="bi bi-mortarboard me-1"></i> Angkatan</label>
-                        <select name="angkatan" class="form-select">
+                        <select name="angkatan_id" class="form-select">
                             <option value="">Semua Angkatan</option>
-                            @forelse($angkatanList as $ang)
-                                <option value="{{ $ang->id }}" {{ request('angkatan') == $ang->id ? 'selected' : '' }}>
-                                    {{ $ang->nama_angkatan }} ({{ $ang->tahun_ajaran }})
+                            @foreach($angkatanList as $ang)
+                                <option value="{{ $ang->id }}" {{ request('angkatan_id') == $ang->id ? 'selected' : '' }}>
+                                    {{ $ang->nama_angkatan }}
                                 </option>
-                            @empty
-                                <option disabled>Tidak ada data angkatan</option>
-                            @endforelse
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Jenis Kelamin --}}
+                    <div>
+                        <label class="filter-label"><i class="bi bi-gender-ambiguous me-1"></i> Jenis Kelamin</label>
+                        <select name="jenis_kelamin" class="form-select">
+                            <option value="">Semua JK</option>
+                            <option value="L" {{ request('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="P" {{ request('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
                         </select>
                     </div>
 
                     {{-- Actions --}}
-                    <div class="d-flex gap-2 align-items-end">
-                        <button type="submit" class="btn-filter" style="flex:1; min-width:110px;">
-                            <i class="bi bi-search"></i> Cari
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn-filter">
+                            <i class="bi bi-search"></i>
                         </button>
 
-                        @if(request('search') || request('angkatan'))
+                        @if(request('search') || request('angkatan_id') || request('jenis_kelamin'))
                             <a href="{{ route('public.direktori') }}" class="btn-reset" title="Reset Filter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
-                                <span class="d-none d-lg-inline">Reset</span>
                             </a>
                         @endif
                     </div>
@@ -550,9 +546,6 @@
 
                     {{-- Image --}}
                     <div class="alumni-card-image">
-                        <div class="alumni-card-badge">
-                            <i class="bi bi-patch-check-fill me-1"></i> Verified
-                        </div>
 
                         @php $fotoUtama = $item->fotos->where('is_main', true)->first(); @endphp
 
@@ -569,18 +562,33 @@
                     <div class="alumni-card-body">
                         <h5 class="alumni-card-name">{{ $item->nama_lengkap }}</h5>
 
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <span class="alumni-card-angkatan">
-                                <i class="bi bi-mortarboard-fill"></i>
+                                <i class="bi bi-mortarboard-fill me-1"></i>
                                 {{ $item->angkatan->nama_angkatan ?? '-' }}
                             </span>
                         </div>
 
+                        {{-- NISN & Gender --}}
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="alumni-card-item mb-0">
+                                <i class="bi bi-hash"></i>
+                                <div>
+                                    <span class="alumni-card-item-label">NISN:</span>
+                                    <span class="alumni-card-item-value">{{ $item->nisn ?? '-' }}</span>
+                                </div>
+                            </div>
+                            <div class="alumni-card-item mb-0">
+                                <i class="bi bi-gender-{{ $item->jenis_kelamin == 'L' ? 'male' : 'female' }}"></i>
+                                <span class="alumni-card-item-value">{{ $item->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+                            </div>
+                        </div>
+
                         {{-- Tahun Lulus --}}
-                        <div class="alumni-card-item">
-                            <i class="bi bi-calendar-event"></i>
+                        <div class="alumni-card-item mb-3">
+                            <i class="bi bi-calendar-check"></i>
                             <div>
-                                <span class="alumni-card-item-label">Lulus:</span>
+                                <span class="alumni-card-item-label">Angkatan Lulus:</span>
                                 <span class="alumni-card-item-value">{{ $item->tahun_lulus }}</span>
                             </div>
                         </div>
