@@ -4,112 +4,105 @@
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**SDMBW Alumni Dashboard** adalah Sistem Informasi Manajemen Alumni berbasis web yang dikembangkan untuk **SD Muhammadiyah Birrul Walidain Kudus**. Sistem ini dirancang untuk mendigitalisasi pendataan alumni, memantau *tracer study*, serta memfasilitasi komunikasi antara sekolah dan lulusannya.
-
----
-
-## 🏛️ Arsitektur Sistem
-Sistem ini dibangun menggunakan **Hybrid Architecture**:
-- **Server Side:** Laravel 12 (Blade Engine untuk struktur & routing).
-- **Client Side:** Vue 3 (Composition API) untuk komponen interaktif dan reaktif.
-- **Styling:** Tailwind CSS 4 (Modern Utility-First) dikombinasikan dengan Bootstrap 5 untuk komponen admin tertentu.
+**SDMBW Alumni Dashboard** adalah Sistem Informasi Manajemen Alumni & *Tracer Study* terpadu yang dikembangkan khusus untuk **SD Muhammadiyah Birrul Walidain Kudus**. Sistem ini berfungsi sebagai basis data tunggal untuk memantau perkembangan alumni, memvalidasi data lulusan, dan menghasilkan laporan statistik yang akurat bagi pihak sekolah.
 
 ---
 
-## ✨ Fitur Unggulan
+## 🏛️ Arsitektur & Teknologi
 
-### 👤 Modul Alumni
-- **Registrasi & Onboarding:** Pendaftaran mandiri menggunakan NISN.
-- **Manajemen Profil Terpadu:** Update data pendidikan lanjutan, riwayat pekerjaan, dan kontak secara mandiri.
-- **Testimoni Alumni:** Memberikan feedback/kesan pesan yang akan ditampilkan di halaman publik setelah diverifikasi.
-- **Direktori Unified:** Melihat daftar alumni lain dengan fitur pencarian dan filter angkatan.
-
-### 🛡️ Modul Administrator
-- **Dashboard Statistik:** Visualisasi data alumni per angkatan menggunakan grafik interaktif (Chart.js).
-- **Manajemen Alumni:**
-  - **Verifikasi Akun:** Memvalidasi pendaftar baru sebelum masuk ke direktori.
-  - **Import/Export Excel:** Migrasi data massal menggunakan template Excel.
-  - **Reset Password:** Mengelola keamanan akun alumni via NISN.
-- **Tracer Study & Laporan:** Pembuatan laporan berkala berdasarkan data angkatan.
-- **CMS (Content Management System):** Mengelola FAQ dan testimoni yang tampil di halaman depan.
-- **Activity Logs:** Audit trail untuk mencatat setiap aktivitas penting di sistem (Keamanan & Monitoring).
+Sistem ini menggunakan pendekatan **Hybrid Modern Architecture**:
+- **Core Engine:** Laravel 12 dengan PHP 8.2+.
+- **Frontend Hybrid:** 
+  - **Blade Engine:** Digunakan untuk struktur halaman utama, layouts, dan SEO-friendly routing.
+  - **Vue.js 3 (Composition API):** Digunakan untuk komponen interaktif tingkat tinggi (Dynamic Forms, Interactive Charts, Real-time Filters).
+  - **Tailwind CSS 4:** Framework CSS utama untuk *styling* yang modern dan responsif.
+  - **Vite:** Sebagai *frontend build tool* untuk performa maksimal.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Fitur Utama Sistem
 
-| Layer | Teknologi |
-| :--- | :--- |
-| **Backend** | Laravel 12, PHP 8.2+ |
-| **Frontend** | Vue 3, Blade, Tailwind CSS 4, Bootstrap 5 |
-| **Database** | MySQL / MariaDB |
-| **Tools** | Vite, Composer, NPM |
-| **Libraries** | Chart.js, Axios, Laravel Excel |
+### 1. Tracer Study & Profiling (Modul Alumni)
+- **Onboarding Terstruktur:** Alumni wajib melengkapi data profil dan riwayat setelah verifikasi.
+- **Pendidikan Terintegrasi:** Pelacakan riwayat pendidikan lanjutan (SMP, SMA, Perguruan Tinggi).
+- **Rekam Jejak Pekerjaan:** Pendataan karir alumni untuk kebutuhan statistik sekolah.
+- **Mandatory Testimonial:** Sistem mengharuskan alumni mengisi kesan & pesan setelah profil lengkap sebagai bagian dari keterlibatan komunitas.
+- **Direktori Publik & Internal:** Pencarian alumni berbasis angkatan dengan filter yang cepat.
 
----
+### 2. High-Level Administration (Modul Admin)
+- **Dashboard Statistik Interaktif:** Ringkasan data angkatan dan status alumni dalam bentuk grafik (Chart.js).
+- **Smart Verification:** Sistem persetujuan akun pendaftar baru (Approve/Reject/Pending).
+- **Excel Data Management:** 
+  - **Mass Import:** Menambah ribuan data alumni sekaligus melalui template Excel.
+  - **Dynamic Export:** Mengunduh data alumni ke format Excel untuk kebutuhan laporan dinamis.
+- **Tracer Study Reporting:** Pembuatan laporan per angkatan yang siap saji.
+- **CMS Control:** Manajemen FaQ dan Testimoni yang tampil di halaman depan.
 
-## 🚀 Panduan Instalasi
-
-### Prasyarat
-- PHP >= 8.2
-- Composer & Node.js (LTS)
-- MySQL Server
-
-### Langkah-langkah
-1. **Clone & Install Dependencies**
-   ```bash
-   git clone https://github.com/Rakawiratama/sdmbw-alumni.git
-   cd sdmbw-alumni
-   composer install
-   npm install
-   ```
-
-2. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-   *Konfigurasi `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` di file `.env`.*
-
-3. **Database Migration**
-   ```bash
-   php artisan migrate --seed
-   ```
-   *Perintah ini akan membuat tabel dan akun admin default.*
-
-4. **Running the App**
-   Jalankan server Laravel dan compiler Vite secara bersamaan:
-   ```bash
-   # Terminal 1
-   php artisan serve
-   
-   # Terminal 2
-   npm run dev
-   ```
+### 3. Keamanan & Audit (Enterprise Grade)
+- **Comprehensive Audit Logs:** Mencatat setiap aktivitas admin (siapa melakukan apa, kepada siapa, dan kapan) secara mendetail (Log Verifikasi, Reset Password, Hapus Data, dll).
+- **Role-Based Access Control (RBAC):** Pemisahan hak akses yang ketat antara Super Admin dan Alumni.
+- **Security Protocols:** Perlindungan terhadap CSRF, XSS, dan *Brute Force Attack* melalui *rate limiting*.
 
 ---
 
-## 🔒 Keamanan Sistem
-- **RBAC (Role Based Access Control):** Pemisahan akses ketat antara admin dan alumni.
-- **Throttle Login:** Pembatasan percobaan login untuk mencegah serangan *brute-force*.
-- **CSRF & XSS Protection:** Proteksi bawaan Laravel terhadap serangan web umum.
-- **Secure Hashing:** Menggunakan algoritma Argon2/Bcrypt untuk perlindungan password.
+## 📁 Struktur Data Penting (Models)
+
+Sistem didukung oleh struktur database yang relasional dan optimal:
+- `Alumni`: Data induk profil alumni.
+- `AlumniPendidikan`: Riwayat studi lanjut.
+- `AlumniPekerjaan`: Riwayat karir/pekerjaan.
+- `AdminLog`: Sistem pencatatan audit trail admin.
+- `Angkatan`: Manajemen data tahun kelulusan.
+- `Testimoni` & `Faq`: Konten dinamis landing page.
 
 ---
 
-## 🗺️ Roadmap Pengembangan
-- [x] Integrasi Vue 3 & Tailwind 4
-- [x] Sistem Import/Export Excel
-- [x] Log Aktivitas & Audit
-- [ ] Integrasi Notifikasi WhatsApp (Fonnte/Wablas)
-- [ ] Export Laporan ke format PDF (DomPDF)
-- [ ] Dashboard Alumni yang lebih interaktif
+## 🚀 Panduan Instalasi Lokal
+
+### 1. Persiapan Environment
+Pastikan Anda memiliki PHP 8.2+, Composer, Node.js, dan MySQL terinstal di sistem Anda.
+
+### 2. Instalasi Proyek
+```bash
+# Clone repository
+git clone https://github.com/Rakawiratama/sdmbw-alumni.git
+cd sdmbw-alumni
+
+# Install dependency
+composer install
+npm install
+
+# Setup environment
+cp .env.example .env
+php artisan key:generate
+```
+
+### 3. Database & Seeding
+```bash
+# Buat database di MySQL (contoh: sdmbw_alumni)
+# Jalankan migrasi dan data awal
+php artisan migrate --seed
+```
+
+### 4. Menjalankan Server
+```bash
+# Terminal 1: Laravel Server
+php artisan serve
+
+# Terminal 2: Vite Compiler
+npm run dev
+```
 
 ---
 
-## 📝 Lisensi & Kontribusi
-Proyek ini bersifat *open-source* di bawah lisensi MIT. Kontribusi berupa *bug report* atau *pull request* sangat kami hargai.
+## 🔒 Akun Default (Seeder)
+- **Admin:** `admin@example.com` / `password`
+- **Alumni (Contoh):** Gunakan NISN yang terdaftar saat seeding atau daftar melalui halaman registrasi.
 
-**Maintainer:** [Rakawiratama](https://github.com/Rakawiratama)
+---
+
+## 📝 Catatan Pengembangan
+Sistem ini dikembangkan dengan prinsip *clean code* dan *service layer pattern* untuk memastikan skalabilitas jangka panjang bagi SD Muhammadiyah Birrul Walidain Kudus.
+
+**Developer:** [Rakawiratama](https://github.com/Rakawiratama)
