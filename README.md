@@ -1,129 +1,132 @@
-SDMBW Alumni Dashboard 🎓
+# SDMBW Alumni Dashboard 🎓
 
-SDMBW Alumni Dashboard adalah aplikasi manajemen alumni berbasis web yang dirancang khusus untuk SD Muhammadiyah Birrul Walidain Kudus. Sistem ini berfungsi sebagai pusat pendataan terintegrasi guna mendukung administrasi sekolah, pelaporan, serta menjalin komunikasi jangka panjang dengan para alumni.
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
 
-📌 Deskripsi Singkat
+**SDMBW Alumni Dashboard** adalah platform manajemen alumni modern yang dirancang khusus untuk **SD Muhammadiyah Birrul Walidain Kudus**. Sistem ini berfungsi sebagai pusat data terintegrasi untuk mendukung administrasi sekolah, pelaporan, dan menjaga komunikasi jangka panjang dengan para alumni.
 
-Aplikasi ini dikembangkan untuk menggantikan sistem pendataan alumni konvensional (manual). Dengan sistem ini, alumni dapat mengelola data pribadi mereka secara mandiri, sementara pihak sekolah memiliki kendali penuh untuk memverifikasi, memantau, dan menyusun laporan data secara akurat dan aman.
+---
 
-🎯 Tujuan Sistem
+## 📌 Deskripsi Proyek
 
-Database Terstruktur: Menyediakan basis data alumni yang rapi dan berkelanjutan.
+Aplikasi ini menggantikan sistem pendataan konvensional yang manual dengan solusi digital yang efisien. Alumni dapat mengelola profil mereka secara mandiri, sementara sekolah memiliki kontrol penuh untuk memverifikasi dan memantau data secara akurat.
 
-Validitas Data: Memastikan data yang masuk valid melalui proses verifikasi admin.
+### 🎯 Tujuan Utama
+- **Database Terstruktur:** Menjamin ketersediaan data alumni yang rapi dan selalu diperbarui.
+- **Validitas Tinggi:** Proses verifikasi admin memastikan hanya data valid yang masuk ke sistem.
+- **Efisiensi Kerja:** Otomatisasi pembuatan laporan dan statistik alumni.
+- **Jembatan Komunikasi:** Memudahkan sekolah menjangkau alumni untuk informasi atau kegiatan sekolah.
 
-Efisiensi Administrasi: Mempermudah pengelolaan dan pembuatan laporan berkala.
+---
 
-Jembatan Komunikasi: Menjadi media penghubung antara pihak sekolah dan alumni.
+## 🛠️ Tech Stack
 
-🛠️ Tech Stack
+### Backend
+- **Framework:** Laravel 12 (Stable)
+- **Language:** PHP 8.2 / 8.3
+- **Database:** MySQL / MariaDB
+- **Auth:** Laravel Breeze / Fortify (Session Based)
 
-Framework: Laravel 11 / 12
+### Frontend
+- **Engine:** Vue.js 3 (Composition API)
+- **Styling:** Tailwind CSS 4 & Bootstrap 5 (Hybrid Setup)
+- **Bundler:** Vite
+- **Charts:** Chart.js with Vue-Chartjs
 
-Bahasa Pemrograman: PHP 8.2 / 8.3
+---
 
-Database: MySQL / MariaDB
+## ✨ Fitur Utama
 
-Frontend: Bootstrap 5 (Responsive UI)
+- 🔐 **Autentikasi Aman:** Login & Registrasi berbasis NISN dengan validasi ganda.
+- 📊 **Smart Dashboard:** Ringkasan status akun dan progres kelengkapan profil.
+- 👤 **Self-Service Profil:** Update data pendidikan, pekerjaan, dan kontak secara mandiri.
+- 📂 **Direktori Alumni:** Pencarian alumni dengan filter angkatan yang responsif.
+- 🛡️ **Powerful Admin Panel:** 
+  - Verifikasi pendaftar baru.
+  - Manajemen master data (Angkatan, Kelas, Pekerjaan).
+  - Monitoring log aktivitas sistem.
+- 📈 **Visualisasi Data:** Grafik statistik alumni menggunakan Chart.js.
+- 📱 **Responsive Design:** Pengalaman pengguna yang mulus di HP maupun Desktop.
 
-Authentication: Laravel Auth (Session based)
+---
 
-Dependency Manager: Composer
+## 🚀 Panduan Instalasi
 
-✨ Fitur Utama
+### Prasyarat
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL Server
 
-🔐 Autentikasi: Registrasi dan login alumni berbasis NISN.
+### Langkah-langkah
 
-📊 Dashboard Alumni: Informasi status akun (Menunggu Verifikasi/Terverifikasi) dan kelengkapan profil.
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/Rakawiratama/sdmbw-alumni.git
+   cd sdmbw-alumni
+   ```
 
-👤 Manajemen Profil: Alumni dapat memperbarui data pendidikan lanjutan dan kontak secara mandiri.
+2. **Instalasi Dependency PHP**
+   ```bash
+   composer install
+   ```
 
-📂 Direktori Alumni: Daftar alumni yang telah terverifikasi untuk akses internal maupun publik.
+3. **Instalasi Dependency JavaScript**
+   ```bash
+   npm install
+   ```
 
-🛡️ Admin Panel: Verifikasi akun baru, manajemen data angkatan/kelas, dan pengelolaan user.
+4. **Konfigurasi Environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Jangan lupa sesuaikan pengaturan `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` di file `.env`.*
 
-📈 Statistik & Laporan: Visualisasi data alumni dan ringkasan statistik per angkatan.
+5. **Migrasi Database & Seeding**
+   ```bash
+   php artisan migrate --seed
+   ```
 
-📝 Activity Logging: Pencatatan aktivitas sistem untuk kebutuhan audit dan keamanan.
+6. **Menjalankan Project**
+   Buka dua terminal:
+   - Terminal 1 (Laravel): `php artisan serve`
+   - Terminal 2 (Vite): `npm run dev`
 
-📱 Responsive Design: Tampilan modern yang optimal di perangkat desktop maupun smartphone.
+7. **Akses Aplikasi**
+   Buka [http://127.0.0.1:8000](http://127.0.0.1:8000) di browser Anda.
 
-🚀 Instalasi & Konfigurasi
+---
 
-Ikuti langkah-langkah berikut untuk menjalankan project di lingkungan lokal:
+## 🔄 Alur Kerja Sistem
 
-Clone Repository
+1. **Registrasi:** Alumni mendaftar menggunakan NISN.
+2. **Lengkapi Data:** Mengisi detail profil (Pendidikan Terakhir, Pekerjaan, Alamat).
+3. **Verifikasi:** Admin memeriksa validitas data di Dashboard Admin.
+4. **Verified:** Setelah disetujui, profil alumni akan muncul di direktori publik/internal.
 
-git clone [https://github.com/Rakawiratama/sdmbw-alumni.git](https://github.com/Rakawiratama/sdmbw-alumni.git)
-cd sdmbw-alumni
+---
 
+## 🔒 Keamanan
+- **CSRF Protection:** Mencegah serangan cross-site.
+- **Bcrypt Hashing:** Keamanan password tingkat tinggi.
+- **Role Management:** Pemisahan ketat akses Admin vs Alumni.
+- **Input Sanitization:** Validasi ketat di semua layer input.
 
-Install Dependencies
+---
 
-composer install
+## 🗺️ Roadmap
+- [x] Manajemen Profil Dasar
+- [x] Dashboard Admin & Statistik
+- [ ] Export Data ke PDF/Excel
+- [ ] Integrasi Notifikasi WhatsApp/Email
+- [ ] Sistem Pengumuman Terpusat
 
+---
 
-Konfigurasi Environment
-Salin file .env.example menjadi .env dan generate application key.
+## 📝 Lisensi
+Proyek ini dikembangkan untuk kepentingan SD Muhammadiyah Birrul Walidain Kudus.
 
-cp .env.example .env
-php artisan key:generate
-
-
-Pengaturan Database
-Buka file .env dan sesuaikan kredensial database Anda:
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=sdmbw_alumni
-DB_USERNAME=root
-DB_PASSWORD=
-
-
-Migrasi dan Seeding
-Jalankan migrasi untuk membuat struktur tabel beserta data awal (admin default).
-
-php artisan migrate --seed
-
-
-Jalankan Server
-
-php artisan serve
-
-
-Akses aplikasi di: http://127.0.0.1:8000
-
-🔄 Alur Penggunaan
-
-Registrasi: Alumni mendaftar menggunakan NISN dan email.
-
-Lengkapi Data: Alumni mengisi profil detail (pendidikan, pekerjaan, dll).
-
-Verifikasi: Admin memeriksa validitas data alumni di panel admin.
-
-Akses Penuh: Setelah diverifikasi, alumni masuk ke direktori dan fitur lainnya.
-
-🔒 Keamanan & Sistem
-
-Role-Based Access Control (RBAC): Pemisahan hak akses antara Admin dan Alumni.
-
-Password Hashing: Keamanan password menggunakan algoritma Bcrypt/Argon2.
-
-CSRF Protection: Perlindungan terhadap serangan Cross-Site Request Forgery.
-
-Input Validation: Validasi ketat pada sisi server untuk semua input pengguna.
-
-🗺️ Roadmap Pengembangan
-
-[ ] Export data alumni ke format PDF dan Excel.
-
-[ ] Integrasi Notifikasi via Email dan WhatsApp.
-
-[ ] Blast pengumuman sekolah untuk alumni.
-
-[ ] Dashboard statistik interaktif (Chart.js).
-
-[ ] API Endpoints untuk integrasi sistem eksternal.
-
-📝 Catatan: Project ini dikembangkan untuk kepentingan pendidikan dan administrasi sekolah. Kontribusi dalam bentuk bug report atau pull request sangat diapresiasi.
+**Dikembangkan oleh:** [Rakawiratama](https://github.com/Rakawiratama)
