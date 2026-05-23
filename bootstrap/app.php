@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'kepala_sekolah'     => \App\Http\Middleware\KepalaSekolahMiddleware::class,
             'alumni'             => \App\Http\Middleware\AlumniMiddleware::class,
             'alumni.onboarding'  => \App\Http\Middleware\EnsureAlumniOnboarding::class,
+            'forum.auth'         => \App\Http\Middleware\ForumMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

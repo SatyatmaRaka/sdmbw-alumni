@@ -12,6 +12,10 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboard;
 use App\Http\Controllers\Alumni\ProfileController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ForumThreadController;
+use App\Http\Controllers\ForumReplyController;
+use App\Http\Controllers\Admin\ForumController as AdminForumController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +26,12 @@ Route::get('/', [LandingController::class, 'index'])->name('landing.index');
 Route::get('/direktori-alumni', [AlumniPublicController::class, 'direktori'])->name('public.direktori');
 Route::get('/direktori-alumni/{alumni}', [AlumniPublicController::class, 'show'])->name('public.profil');
 Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+
+Route::prefix('forum')->name('forum.')->group(function () {
+    Route::get('/', [ForumController::class, 'index'])->name('index');
+    Route::get('/{forum:slug}', [ForumController::class, 'show'])->name('show');
+    Route::get('/thread/{thread:slug}', [ForumThreadController::class, 'show'])->name('thread.show');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +51,14 @@ Route::middleware('guest')->group(function () {
 */
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+});
+
+Route::middleware(['forum.auth'])->group(function () {
+    Route::get('/forum-create-thread', [ForumThreadController::class, 'create'])->name('forum.thread.create');
+    Route::post('/forum-thread', [ForumThreadController::class, 'store'])->name('forum.thread.store');
+    Route::delete('/forum-thread/{thread}', [ForumThreadController::class, 'destroy'])->name('forum.thread.destroy');
+    Route::post('/forum-thread/{thread}/reply', [ForumReplyController::class, 'store'])->name('forum.reply.store');
+    Route::delete('/forum-reply/{reply}', [ForumReplyController::class, 'destroy'])->name('forum.reply.destroy');
 });
 
 /*
@@ -109,6 +127,15 @@ Route::middleware(['auth', 'admin_only'])
 
         // Laporan Export PDF (Admin Only)
         Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+
+        // Forum Moderation
+        Route::prefix('forum')->name('forum.')->group(function () {
+            Route::get('/', [AdminForumController::class, 'index'])->name('index');
+            Route::post('/thread/{thread}/pin', [AdminForumController::class, 'pin'])->name('pin');
+            Route::post('/thread/{thread}/lock', [AdminForumController::class, 'lock'])->name('lock');
+            Route::delete('/thread/{thread}', [AdminForumController::class, 'destroyThread'])->name('destroyThread');
+            Route::delete('/reply/{reply}', [AdminForumController::class, 'destroyReply'])->name('destroyReply');
+        });
     });
 
 /*

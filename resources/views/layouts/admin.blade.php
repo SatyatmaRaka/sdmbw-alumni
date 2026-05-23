@@ -472,6 +472,19 @@
                         <span>Kelola Testimoni</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.forum.index') }}"
+                        class="{{ request()->routeIs('admin.forum.*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-square-text-fill"></i>
+                        <span>Moderasi Forum</span>
+                        @php
+                            $newThreadsCount = \App\Models\ForumThread::where('created_at', '>=', now()->subDay())->count();
+                        @endphp
+                        @if($newThreadsCount > 0)
+                            <span class="badge bg-danger ms-auto rounded-pill">{{ $newThreadsCount }}</span>
+                        @endif
+                    </a>
+                </li>
                 @endif
 
                 <div class="sidebar-divider"></div>

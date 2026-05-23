@@ -576,6 +576,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('forum.index') }}">Forum</a>
+                    </li>
 
                     @guest
                         <li class="nav-item ms-lg-1">
