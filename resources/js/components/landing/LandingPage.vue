@@ -110,6 +110,69 @@
       </div>
     </section>
 
+    <!-- BERITA SECTION -->
+    <section v-if="beritas && beritas.length > 0" class="berita-section py-5 my-3 bg-white position-relative">
+      <div class="container py-5">
+        <div class="text-center mb-5 fade-in-up">
+          <div class="hero-badge-container mb-3">
+            <span class="premium-badge text-primary bg-primary-subtle border-0">
+              <i class="bi bi-newspaper text-primary me-2"></i> Berita & Informasi
+            </span>
+          </div>
+          <h2 class="section-title h1 fw-bold mb-3">Kabar Terbaru Sekolah & Alumni</h2>
+          <p class="text-muted mx-auto" style="max-width: 600px;">Ikuti berita, pengumuman, dan agenda kegiatan terbaru seputar SD Muhammadiyah Birrul Walidain.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+          <div class="col-md-6 col-lg-4" v-for="(berita, i) in beritas" :key="berita.id">
+            <div class="berita-card glass-card h-100 d-flex flex-column fade-in-up overflow-hidden" :style="`animation-delay: ${0.2 + (i%3)*0.1}s`">
+              <div v-if="berita.image_url" class="berita-img-wrapper overflow-hidden" style="height: 200px; border-bottom: 1px solid rgba(226, 232, 240, 0.6);">
+                <img :src="berita.image_url" class="w-100 h-100 object-fit-cover berita-img-thumb" alt="Gambar Berita">
+              </div>
+              <div class="p-4 d-flex flex-column flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between mb-3 text-muted small">
+                  <span><i class="bi bi-calendar3 me-1"></i>{{ formatDate(berita.created_at) }}</span>
+                  <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1">Kabar</span>
+                </div>
+                <h5 class="fw-bold mb-3 text-primary text-line-clamp-2">{{ berita.title }}</h5>
+                <p class="text-muted small mb-4 flex-grow-1 text-line-clamp-4">{{ berita.content }}</p>
+                
+                <!-- Trigger Modal Detail Berita -->
+                <button class="btn btn-outline-primary rounded-pill px-4 mt-auto align-self-start fw-bold shadow-sm" data-bs-toggle="modal" :data-bs-target="'#modalDetailBerita' + berita.id">
+                  Baca Selengkapnya <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Detail Modal Berita -->
+            <div class="modal fade" :id="'modalDetailBerita' + berita.id" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow rounded-4 text-start">
+                  <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start">
+                    <div>
+                      <h4 class="fw-bold mb-1 text-primary">{{ berita.title }}</h4>
+                      <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ formatDate(berita.created_at) }}</small>
+                    </div>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body py-4">
+                    <div v-if="berita.image_url" class="mb-4 rounded-4 overflow-hidden border shadow-sm" style="max-height: 380px;">
+                      <img :src="berita.image_url" class="w-100 h-100 object-fit-cover" alt="Detail Gambar Berita">
+                    </div>
+                    <p class="text-muted lh-lg" style="white-space: pre-wrap;">{{ berita.content }}</p>
+                  </div>
+                  <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- TESTIMONIALS -->
     <section v-if="testimonis && testimonis.length > 0" class="testimonials-section py-5 bg-light position-relative">
       <div class="container py-5">
@@ -221,10 +284,17 @@ const props = defineProps({
   stats: { type: Object, default: () => ({ total_alumni: 0, total_angkatan: 0, profil_lengkap: 0, total_instansi: 0 }) },
   faqs: { type: Array, default: () => [] },
   testimonis: { type: Array, default: () => [] },
+  beritas: { type: Array, default: () => [] },
   heroImage: { type: String, required: true },
   dashboardUrl: { type: String, required: true },
   loginUrl: { type: String, required: true }
 });
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 const statsItems = computed(() => [
   { label: 'Alumni', value: props.stats?.total_alumni || 0, icon: 'bi-people-fill', color: 'text-primary', bg: 'bg-primary-subtle' },
@@ -439,5 +509,37 @@ const handleImageError = (e) => { e.target.style.display = 'none'; };
   border: 1px solid rgba(226, 232, 240, 0.6);
   border-top: none;
   box-shadow: 0 10px 15px rgba(0,0,0,0.02);
+}
+
+/* Berita Card & Clamp Styles */
+.text-line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.text-line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.berita-card {
+  border-radius: 24px;
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  transition: all 0.3s ease;
+}
+.berita-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  border-color: rgba(27, 58, 82, 0.3);
+}
+.berita-img-thumb {
+  transition: transform 0.4s ease;
+}
+.berita-card:hover .berita-img-thumb {
+  transform: scale(1.05);
 }
 </style>

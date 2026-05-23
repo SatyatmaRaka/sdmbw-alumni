@@ -7,6 +7,7 @@ use App\Models\Angkatan;
 use App\Models\Faq;
 use App\Models\Testimoni;
 use App\Models\Comment; // TAMBAHKAN INI: Mengimpor model Comment
+use App\Models\Berita;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -42,10 +43,14 @@ class LandingController extends Controller
                 ->get();
         });
 
+        $beritas = \Illuminate\Support\Facades\Cache::remember('landing_beritas', 60 * 60, function () {
+            return Berita::where('is_active', true)->latest()->take(6)->get();
+        });
+
         // TAMBAHKAN INI: Mengambil 10 komentar terbaru
         $comments = Comment::latest()->take(10)->get();
 
         // UBAH BARIS INI: Tambahkan 'comments' di dalam compact()
-        return view('landing.index', compact('stats', 'faqs', 'testimonis', 'comments'));
+        return view('landing.index', compact('stats', 'faqs', 'testimonis', 'comments', 'beritas'));
     }
 }

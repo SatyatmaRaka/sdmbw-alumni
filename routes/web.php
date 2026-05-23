@@ -118,6 +118,7 @@ Route::middleware(['auth', 'admin_only'])
         // FAQ & Testimoni (CMS Publik)
         Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->except(['show']);
         Route::resource('testimonis', \App\Http\Controllers\Admin\TestimoniController::class)->except(['show']);
+        Route::resource('beritas', \App\Http\Controllers\Admin\BeritaController::class)->except(['show']);
 
         // Activity Logs (Actions)
         Route::prefix('logs')->name('logs.')->group(function () {

@@ -473,6 +473,13 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.beritas.index') }}"
+                        class="{{ request()->routeIs('admin.beritas.*') ? 'active' : '' }}">
+                        <i class="bi bi-newspaper"></i>
+                        <span>Kelola Berita</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.forum.index') }}"
                         class="{{ request()->routeIs('admin.forum.*') ? 'active' : '' }}">
                         <i class="bi bi-chat-square-text-fill"></i>
