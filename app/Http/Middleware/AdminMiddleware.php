@@ -19,6 +19,13 @@ class AdminMiddleware
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        // Cek apakah akun user aktif
+        if (!Auth::user()->is_active) {
+            Auth::logout();
+            $request->session()->invalidate();
+            return redirect()->route('login')->with('error', 'Akun Anda telah dinonaktifkan oleh administrator.');
+        }
+
         // 2. Cek apakah role user adalah 'admin'
         // Kita langsung cek kolom 'role' agar tidak bergantung pada fungsi tambahan
         if (Auth::user()->role !== 'admin') {
