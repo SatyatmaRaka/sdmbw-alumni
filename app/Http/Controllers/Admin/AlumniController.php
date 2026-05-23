@@ -190,7 +190,7 @@ class AlumniController extends Controller
 
             DB::commit();
             $this->clearDashboardCache();
-            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset ke NISN.");
+            return back()->with('success', 'Password alumni berhasil direset ke NISN.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal reset password: ' . $e->getMessage());

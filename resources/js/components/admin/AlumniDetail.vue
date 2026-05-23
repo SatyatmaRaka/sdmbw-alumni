@@ -213,7 +213,7 @@
 
             <hr class="my-2 opacity-50">
 
-            <button @click="resetPassword" class="btn btn-warning fw-bold text-white py-2">
+            <button @click="resetPassword" class="btn btn-danger fw-bold text-white py-2">
               <i class="bi bi-key-fill me-1"></i> Reset Password
             </button>
             <a :href="`/admin/alumni/${alumni.id}/edit`" class="btn btn-primary fw-bold py-2">
@@ -277,8 +277,8 @@ const verifyAlumni = (status) => {
 };
 
 const resetPassword = () => {
-  if (confirm('Yakin ingin me-reset password alumni ini ke NISN?')) {
-    submitForm(props.resetPasswordUrl, 'PUT');
+  if (confirm('Reset password alumni ini ke NISN mereka?')) {
+    submitForm(props.resetPasswordUrl, 'POST');
   }
 };
 

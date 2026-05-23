@@ -88,7 +88,7 @@ Route::middleware(['auth', 'admin'])
             Route::get('/{alumni}/edit', 'edit')->name('edit');
             Route::put('/{alumni}', 'update')->name('update');
             Route::put('/{alumni}/verify', 'verify')->name('verify');
-            Route::put('/{alumni}/reset-password', 'resetPassword')->name('resetPassword');
+            Route::post('/{alumni}/reset-password', 'resetPassword')->name('reset-password');
             Route::delete('/{alumni}', 'destroy')->name('destroy');
         });
 

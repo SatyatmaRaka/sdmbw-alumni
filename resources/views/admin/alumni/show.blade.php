@@ -7,7 +7,7 @@
     <admin-alumni-detail 
         :alumni="{{ json_encode($alumni->load(['user', 'angkatan', 'pendidikan', 'pekerjaan', 'fotos'])) }}" 
         verify-url="{{ route('admin.alumni.verify', $alumni) }}"
-        reset-password-url="{{ route('admin.alumni.resetPassword', $alumni) }}"
+        reset-password-url="{{ route('admin.alumni.reset-password', $alumni) }}"
         delete-url="{{ route('admin.alumni.destroy', $alumni) }}">
     </admin-alumni-detail>
 @endsection
