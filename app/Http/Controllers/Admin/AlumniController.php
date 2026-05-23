@@ -165,18 +165,17 @@ class AlumniController extends Controller
 
     public function resetPassword(Alumni $alumni)
     {
-        if (!$alumni->nisn) {
-            return back()->with('error', 'Gagal reset! Data NISN tidak ditemukan.');
-        }
-
         DB::beginTransaction();
         try {
             if (!$alumni->user) {
                 return back()->with('error', 'Akun user tidak ditemukan.');
             }
 
+            // Generate password acak 8 karakter
+            $newPassword = \Illuminate\Support\Str::random(8);
+
             $alumni->user->update([
-                'password' => Hash::make($alumni->nisn),
+                'password' => Hash::make($newPassword),
                 'must_change_password' => true,
             ]);
 
@@ -185,12 +184,12 @@ class AlumniController extends Controller
                 AdminLog::ACTION_RESET_PASSWORD,
                 'alumni',
                 $alumni->id,
-                "Reset password alumni: {$alumni->nama_lengkap} (NISN: {$alumni->nisn}) menjadi NISN"
+                "Reset password alumni: {$alumni->nama_lengkap} (NISN: {$alumni->nisn}) menjadi password acak"
             );
 
             DB::commit();
             $this->clearDashboardCache();
-            return back()->with('success', 'Password alumni berhasil direset ke NISN.');
+            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset. PASSWORD BARU: {$newPassword} (Mohon catat dan berikan ke alumni bersangkutan)");
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal reset password: ' . $e->getMessage());

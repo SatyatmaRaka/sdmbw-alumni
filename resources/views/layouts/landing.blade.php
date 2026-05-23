@@ -12,6 +12,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistem Alumni') - SD Muhammadiyah Birrul Walidain Kudus</title>
 
+    {{-- SEO & Meta Tags --}}
+    <meta name="description" content="Portal resmi Sistem Informasi Alumni SD Muhammadiyah Birrul Walidain (SDMBW) Kudus. Wadah silaturahmi, jejaring, dan informasi terbaru alumni." />
+    <meta name="keywords" content="alumni sdmbw, sd muhammadiyah birrul walidain, sdmbw kudus, alumni sd, direktori alumni" />
+    <meta name="author" content="SD Muhammadiyah Birrul Walidain Kudus" />
+    <meta name="robots" content="index, follow" />
+    
+    {{-- Open Graph / Social Media Meta Tags --}}
+    <meta property="og:title" content="Sistem Alumni SD Muhammadiyah Birrul Walidain Kudus" />
+    <meta property="og:description" content="Portal resmi silaturahmi dan jejaring alumni SDMBW Kudus." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ url('/') }}" />
+    <meta property="og:image" content="{{ asset('images/logo-sdmbw.png') }}" />
+
     {{-- 1. Bootstrap CSS (reset & components, NO layer — highest cascade priority) --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -788,6 +801,19 @@
             showToast("{{ $error }}", 'error', 5000);
         @endforeach
     @endif
+    </script>
+
+    {{-- PWA Service Worker Registration --}}
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
     </script>
 
     {{-- Loading State Script --}}

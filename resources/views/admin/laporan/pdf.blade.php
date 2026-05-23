@@ -234,6 +234,15 @@
     {{-- ── HEADER ── --}}
     <div class="report-header">
         <div class="header-flex">
+            <div class="header-logo-cell">
+                @php
+                    $path = public_path('images/logo-sdmbw.png');
+                    $type = pathinfo($path, PATHINFO_EXTENSION);
+                    $data = file_get_contents($path);
+                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                @endphp
+                <img src="{{ $base64 }}" class="header-logo" alt="Logo SDMBW">
+            </div>
             <div class="header-text-cell">
                 <div class="school-name">SD Muhammadiyah Birrul Walidain</div>
                 <div class="school-subtitle">Kudus, Jawa Tengah &bull; Sistem Informasi Alumni</div>
