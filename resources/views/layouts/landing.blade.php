@@ -590,6 +590,9 @@
                         <a class="nav-link" href="{{ route('public.direktori') }}">Direktori Alumni</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('public.berita.index') }}">Berita</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('forum.index') }}">Forum</a>
                     </li>
 
@@ -617,6 +620,7 @@
         </main>
     </div>
 
+    @if(request()->routeIs('landing.index'))
     <!-- COMMENT SECTION -->
     <div id="comment-section">
         <div class="container my-5">
@@ -678,6 +682,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <footer class="footer">
         <div class="container">
@@ -696,6 +701,7 @@
                     <ul class="list-unstyled">
                         <li><a href="{{ route('landing.index') }}"><i class="bi bi-chevron-right"></i> Beranda</a></li>
                         <li><a href="{{ route('public.direktori') }}"><i class="bi bi-chevron-right"></i> Direktori Alumni</a></li>
+                        <li><a href="{{ route('public.berita.index') }}"><i class="bi bi-chevron-right"></i> Berita & Informasi</a></li>
                         <li><a href="{{ route('login') }}"><i class="bi bi-chevron-right"></i> Masuk</a></li>
                     </ul>
                 </div>

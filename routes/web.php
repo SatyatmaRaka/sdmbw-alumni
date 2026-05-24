@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Public\AlumniPublicController;
+use App\Http\Controllers\Public\BeritaPublicController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\AngkatanController;
 use App\Http\Controllers\Admin\AlumniController as AdminAlumni;
@@ -27,8 +28,11 @@ Route::get('/', [LandingController::class, 'index'])->name('landing.index');
 Route::get('/direktori-alumni', [AlumniPublicController::class, 'direktori'])->name('public.direktori');
 Route::get('/direktori-alumni/{alumni}', [AlumniPublicController::class, 'show'])->name('public.profil');
 Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+Route::get('/berita', [BeritaPublicController::class, 'index'])->name('public.berita.index');
+Route::get('/berita/{slug}', [BeritaPublicController::class, 'show'])->name('public.berita.show');
 
 Route::prefix('forum')->name('forum.')->group(function () {
+
     Route::get('/', [ForumController::class, 'index'])->name('index');
     Route::get('/{forum:slug}', [ForumController::class, 'show'])->name('show');
     Route::get('/thread/{thread:slug}', [ForumThreadController::class, 'show'])->name('thread.show');
@@ -122,6 +126,8 @@ Route::middleware(['auth', 'admin_only'])
         // FAQ & Testimoni (CMS Publik)
         Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->except(['show']);
         Route::resource('testimonis', \App\Http\Controllers\Admin\TestimoniController::class)->except(['show']);
+        Route::resource('comments', \App\Http\Controllers\Admin\CommentController::class)->only(['index', 'destroy']);
+        Route::post('beritas/{berita}/toggle-featured', [\App\Http\Controllers\Admin\BeritaController::class, 'toggleFeatured'])->name('beritas.toggle-featured');
         Route::resource('beritas', \App\Http\Controllers\Admin\BeritaController::class)->except(['show']);
 
         // Activity Logs (Actions)

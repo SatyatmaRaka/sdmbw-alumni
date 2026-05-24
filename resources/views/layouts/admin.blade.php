@@ -480,6 +480,13 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.comments.index') }}"
+                        class="{{ request()->routeIs('admin.comments.*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-left-text-fill"></i>
+                        <span>Kelola Komentar</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.beritas.index') }}"
                         class="{{ request()->routeIs('admin.beritas.*') ? 'active' : '' }}">
                         <i class="bi bi-newspaper"></i>

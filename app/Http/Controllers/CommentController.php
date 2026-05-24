@@ -31,6 +31,9 @@ class CommentController extends Controller
             'message' => $request->message,
         ]);
 
+        // Hapus cache komentar landing page agar komentar baru langsung tampil
+        \Illuminate\Support\Facades\Cache::forget('landing_comments');
+
         // 4. Redirect kembali ke halaman sebelumnya dengan session flash 'success'
         // Session ini akan memicu script Toast Notification yang ada di file HTML/Blade Anda
         return redirect()->back()->with('success', 'Pesan anonim Anda berhasil dikirim!');

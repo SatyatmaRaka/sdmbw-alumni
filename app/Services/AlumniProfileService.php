@@ -94,7 +94,7 @@ class AlumniProfileService
         $image = $manager->decode($file->getPathname());
         
         $image->scale(width: 800);
-        $image->save(storage_path('app/public/' . $path));
+        $image->save(Storage::disk('public')->path($path));
 
         $alumni->fotos()->create([
             'path_file' => $path,

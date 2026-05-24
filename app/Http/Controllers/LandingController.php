@@ -44,7 +44,11 @@ class LandingController extends Controller
         });
 
         $beritas = \Illuminate\Support\Facades\Cache::remember('landing_beritas', 60 * 60, function () {
-            return Berita::where('is_active', true)->latest()->take(6)->get();
+            return Berita::where('is_active', true)
+                ->orderBy('is_featured', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get();
         });
 
         // TAMBAHKAN INI: Mengambil 10 komentar terbaru dengan cache

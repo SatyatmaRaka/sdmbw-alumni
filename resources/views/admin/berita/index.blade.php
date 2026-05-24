@@ -3,9 +3,32 @@
 @section('title', 'Manajemen Berita')
 @section('page-title', 'Kelola Berita')
 
+@push('styles')
+<!-- Quill snow theme CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+<style>
+    .ql-container {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.95rem !important;
+        border-bottom-left-radius: 12px !important;
+        border-bottom-right-radius: 12px !important;
+        min-height: 200px;
+    }
+    .ql-toolbar {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        border-top-left-radius: 12px !important;
+        border-top-right-radius: 12px !important;
+        background: #f8fafc;
+    }
+    .editor-wrapper {
+        margin-bottom: 1rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="card border-0 shadow-sm rounded-4">
-    <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+    <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center pb-2">
         <div>
             <h5 class="mb-0 fw-bold d-flex align-items-center">
                 <i class="bi bi-newspaper text-primary me-2"></i> Daftar Berita
@@ -17,16 +40,43 @@
         </button>
     </div>
 
+    <!-- Search & Filter Form -->
+    <div class="card-header bg-white border-0 pt-0 pb-4 px-4">
+        <form action="{{ route('admin.beritas.index') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control bg-light border-0" placeholder="Cari judul atau konten berita..." value="{{ request('q') }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select bg-light border-0">
+                    <option value="">Semua Status</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
+                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Nonaktif</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary px-4 rounded-3 fw-bold"><i class="bi bi-filter me-1"></i> Filter</button>
+                @if(request()->filled('q') || request()->filled('status'))
+                    <a href="{{ route('admin.beritas.index') }}" class="btn btn-light px-3 rounded-3 text-muted"><i class="bi bi-x-lg"></i> Bersihkan</a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table align-middle mb-0 custom-table">
                 <thead class="text-muted small text-uppercase fw-bold bg-light">
                     <tr>
-                        <th class="ps-4 py-3" style="width: 15%;">Tanggal</th>
-                        <th class="py-3" style="width: 30%;">Judul</th>
-                        <th class="py-3" style="width: 35%;">Konten</th>
-                        <th class="py-3" style="width: 10%;">Status</th>
-                        <th class="pe-4 py-3 text-end" style="width: 10%;">Aksi</th>
+                        <th class="ps-4 py-3" style="width: 12%;">Tanggal</th>
+                        <th class="py-3" style="width: 28%;">Judul</th>
+                        <th class="py-3" style="width: 25%;">Konten</th>
+                        <th class="py-3 text-center" style="width: 8%;">Featured</th>
+                        <th class="py-3 text-center" style="width: 10%;">Views</th>
+                        <th class="py-3" style="width: 8%;">Status</th>
+                        <th class="pe-4 py-3 text-end" style="width: 9%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,7 +101,18 @@
                             </div>
                         </td>
                         <td class="py-3 text-muted small text-break">
-                            {{ Str::limit($berita->content, 120) }}
+                            @if($berita->excerpt)
+                                <div class="fw-semibold text-dark mb-1">{{ Str::limit($berita->excerpt, 60) }}</div>
+                            @endif
+                            {{ Str::limit(strip_tags($berita->content), 100) }}
+                        </td>
+                        <td class="py-3 text-center">
+                            <button class="btn btn-sm btn-link toggle-featured-btn" data-id="{{ $berita->id }}" data-url="{{ route('admin.beritas.toggle-featured', $berita) }}" title="Toggle Featured" style="text-decoration: none;">
+                                <i class="bi {{ $berita->is_featured ? 'bi-star-fill text-warning' : 'bi-star text-muted' }} fs-5"></i>
+                            </button>
+                        </td>
+                        <td class="py-3 text-center text-muted small">
+                            <i class="bi bi-eye me-1"></i> {{ number_format($berita->views_count) }}
                         </td>
                         <td class="py-3">
                             @if($berita->is_active)
@@ -75,60 +136,9 @@
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Edit Modal -->
-                    <div class="modal fade" id="modalEditBerita{{ $berita->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content border-0 shadow rounded-4">
-                                <div class="modal-header border-0 pb-0">
-                                    <h5 class="fw-bold mb-0">Edit Berita</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form action="{{ route('admin.beritas.update', $berita) }}" method="POST" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-body">
-                                        @if($berita->image)
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted d-block">Foto Saat Ini</label>
-                                            <img src="{{ asset('storage/' . $berita->image) }}" class="rounded-3 border mb-2 object-fit-cover shadow-sm" style="height: 100px; width: 150px;">
-                                        </div>
-                                        @endif
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Judul Berita</label>
-                                            <input type="text" name="title" class="form-control rounded-3" value="{{ $berita->title }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Konten Berita</label>
-                                            <textarea name="content" class="form-control rounded-3" rows="8" required>{{ $berita->content }}</textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Foto Berita (Baru)</label>
-                                            <input type="file" name="image" class="form-control rounded-3 image-input" accept="image/*">
-                                            <div class="form-text text-muted small">Format: JPG, PNG, WEBP. Maks: 3MB.</div>
-                                            <div class="mt-2 preview-container d-none">
-                                                <img src="" class="img-thumbnail rounded-3 img-preview" style="max-height: 140px;">
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
-                                            <div class="form-check form-switch mt-2">
-                                                <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $berita->is_active ? 'checked' : '' }}>
-                                                <label class="form-check-label small">Tampilkan di Web Publik</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer border-0 pt-0">
-                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
+                        <td colspan="7" class="text-center py-5 text-muted">
                             <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
                             Belum ada data berita.
                         </td>
@@ -149,6 +159,74 @@
     </div>
 </div>
 
+<!-- Edit Modals (di luar table agar HTML valid dan form berfungsi dengan benar) -->
+@foreach($beritas as $berita)
+<div class="modal fade" id="modalEditBerita{{ $berita->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold mb-0">Edit Berita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('admin.beritas.update', $berita) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    @if($berita->image)
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted d-block">Foto Saat Ini</label>
+                        <img src="{{ asset('storage/' . $berita->image) }}" class="rounded-3 border mb-2 object-fit-cover shadow-sm" style="height: 100px; width: 150px;">
+                    </div>
+                    @endif
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Judul Berita</label>
+                        <input type="text" name="title" class="form-control rounded-3" value="{{ $berita->title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Ringkasan / Excerpt (Opsional)</label>
+                        <textarea name="excerpt" class="form-control rounded-3" rows="2" maxlength="300" placeholder="Tulis ringkasan berita singkat untuk preview card (max 300 karakter). Jika kosong, ringkasan akan digenerate otomatis.">{{ $berita->excerpt }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Konten Berita</label>
+                        <div class="editor-wrapper">
+                            <div id="editorEdit{{ $berita->id }}" class="edit-editor" style="height: 250px;">
+                                {!! $berita->content !!}
+                            </div>
+                        </div>
+                        <textarea name="content" id="contentEdit{{ $berita->id }}" class="d-none"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Foto Berita (Baru)</label>
+                        <input type="file" name="image" class="form-control rounded-3 image-input" accept="image/*">
+                        <div class="form-text text-muted small">Format: JPG, PNG, WEBP. Maks: 3MB.</div>
+                        <div class="mt-2 preview-container d-none">
+                            <img src="" class="img-thumbnail rounded-3 img-preview" style="max-height: 140px;">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted d-block">Status & Pengaturan</label>
+                        <div class="d-flex gap-4 mt-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="isActiveEdit{{ $berita->id }}" value="1" {{ $berita->is_active ? 'checked' : '' }}>
+                                <label class="form-check-label small" for="isActiveEdit{{ $berita->id }}">Tampilkan di Web Publik</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_featured" id="isFeaturedEdit{{ $berita->id }}" value="1" {{ $berita->is_featured ? 'checked' : '' }}>
+                                <label class="form-check-label small" for="isFeaturedEdit{{ $berita->id }}">Berita Unggulan (Featured)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
 <!-- Tambah Modal -->
 <div class="modal fade" id="modalTambahBerita" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -165,8 +243,15 @@
                         <input type="text" name="title" class="form-control rounded-3" placeholder="Contoh: Kegiatan Reuni Akbar Alumni 2026" required>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Ringkasan / Excerpt (Opsional)</label>
+                        <textarea name="excerpt" class="form-control rounded-3" rows="2" maxlength="300" placeholder="Tulis ringkasan berita singkat untuk preview card (max 300 karakter). Jika kosong, ringkasan akan digenerate otomatis."></textarea>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">Konten Berita</label>
-                        <textarea name="content" class="form-control rounded-3" rows="8" placeholder="Tulis isi berita lengkap di sini..." required></textarea>
+                        <div class="editor-wrapper">
+                            <div id="editorTambah" style="height: 250px;"></div>
+                        </div>
+                        <textarea name="content" id="contentTambah" class="d-none"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">Foto Berita</label>
@@ -177,10 +262,16 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
-                        <div class="form-check form-switch mt-2">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" checked>
-                            <label class="form-check-label small">Tampilkan di Web Publik</label>
+                        <label class="form-label small fw-bold text-muted d-block">Status & Pengaturan</label>
+                        <div class="d-flex gap-4 mt-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="isActiveTambah" value="1" checked>
+                                <label class="form-check-label small" for="isActiveTambah">Tampilkan di Web Publik</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_featured" id="isFeaturedTambah" value="1">
+                                <label class="form-check-label small" for="isFeaturedTambah">Berita Unggulan (Featured)</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,8 +309,69 @@
 </div>
 
 @push('scripts')
+<!-- Quill JS Library -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script>
+// Global error listener untuk membantu debugging di browser user
+window.onerror = function(message, source, lineno, colno, error) {
+    const errMsg = `JS Uncaught Error: ${message} (Baris ${lineno}:${colno} di ${source})`;
+    console.error(errMsg, error);
+    if (window.showToast) {
+        window.showToast(errMsg, 'error', 15000);
+    } else {
+        alert(errMsg);
+    }
+    return false;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi Quill Editor untuk Tambah Berita
+    let quillTambah = null;
+    try {
+        const editorTambahEl = document.getElementById('editorTambah');
+        if (editorTambahEl) {
+            quillTambah = new Quill('#editorTambah', {
+                theme: 'snow',
+                placeholder: 'Tulis isi berita lengkap di sini...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Gagal inisialisasi editor tambah:", e);
+    }
+
+    // Inisialisasi Quill Editor untuk Edit Berita (Dinamis per Modal)
+    const editEditors = {};
+    try {
+        document.querySelectorAll('.edit-editor').forEach(editor => {
+            const id = editor.id; // Misal: editorEdit1
+            const beritaId = id.replace('editorEdit', '');
+            editEditors[beritaId] = new Quill('#' + id, {
+                theme: 'snow',
+                placeholder: 'Ubah isi berita lengkap di sini...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+        });
+    } catch (e) {
+        console.error("Gagal inisialisasi editor edit:", e);
+    }
+
     // Preview gambar terpilih
     document.querySelectorAll('.image-input').forEach(input => {
         input.addEventListener('change', function() {
@@ -250,110 +402,224 @@ document.addEventListener('DOMContentLoaded', function() {
             
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
-                const fileInput = form.querySelector('input[type="file"]');
-                const file = fileInput ? fileInput.files[0] : null;
-                
-                const progressModalEl = document.getElementById('modalUploadProgress');
-                const progressModal = new bootstrap.Modal(progressModalEl);
-                const progressBar = document.getElementById('uploadProgressBar');
-                const progressText = document.getElementById('uploadProgressText');
-                const colorImg = document.getElementById('progressPreviewColor');
-                const grayImg = document.getElementById('progressPreviewGrayscale');
-                
-                // Set preview di progress modal
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        colorImg.src = e.target.result;
-                        grayImg.src = e.target.result;
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    // Fallback gambar sekolah jika tidak upload gambar
-                    const fallbackSrc = "{{ asset('images/bw-sekolah.webp') }}";
-                    colorImg.src = fallbackSrc;
-                    grayImg.src = fallbackSrc;
-                }
-                
-                // Reset progress
-                progressBar.style.width = '0%';
-                progressText.innerText = '0%';
-                colorImg.style.clipPath = 'inset(0 100% 0 0)';
-                
-                // Sembunyikan modal tambah/edit yang sedang terbuka agar tidak tumpang tindih
-                const activeModalEl = form.closest('.modal');
-                if (activeModalEl) {
-                    const activeModal = bootstrap.Modal.getInstance(activeModalEl);
-                    if (activeModal) activeModal.hide();
-                }
-                
-                progressModal.show();
-                
-                // Build FormData
-                const formData = new FormData(form);
-                
-                // Submit via Axios
-                window.axios.post(action, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    onUploadProgress: function(progressEvent) {
-                        if (progressEvent.total) {
-                            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            progressBar.style.width = percent + '%';
-                            progressText.innerText = percent + '%';
-                            
-                            // Animasi transisi grayscale ke color dari kiri ke kanan
-                            colorImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+
+                // Helper untuk mereset tombol submit ke keadaan semula jika terjadi error/validasi gagal
+                const resetSubmitBtn = () => {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.classList.remove('btn-loading');
+                        submitBtn.disabled = false;
+                        if (submitBtn.hasAttribute('data-original-text')) {
+                            submitBtn.innerHTML = submitBtn.getAttribute('data-original-text');
                         }
                     }
-                })
-                .then(response => {
-                    progressBar.style.width = '100%';
-                    progressText.innerText = '100%';
-                    colorImg.style.clipPath = 'inset(0 0% 0 0)';
-                    
-                    setTimeout(() => {
-                        progressModal.hide();
-                        if (response.data.success) {
-                            if (window.showToast) {
-                                window.showToast(response.data.message, 'success');
+                };
+
+                try {
+                    // Sinkronisasi konten Quill ke Textarea Tersembunyi sebelum submit
+                    const editorEl = form.querySelector('.edit-editor');
+                    if (editorEl) {
+                        const beritaId = editorEl.id.replace('editorEdit', '');
+                        const quillEdit = editEditors[beritaId];
+                        const textareaEdit = document.getElementById('contentEdit' + beritaId);
+                        if (quillEdit && textareaEdit) {
+                            const html = quillEdit.root.innerHTML;
+                            // Quill empty content is usually "<p><br></p>"
+                            if (html === '<p><br></p>' || html.trim() === '') {
+                                if (window.showToast) {
+                                    window.showToast('Konten berita tidak boleh kosong.', 'error');
+                                } else {
+                                    alert('Konten berita tidak boleh kosong.');
+                                }
+                                resetSubmitBtn();
+                                return;
                             }
-                            setTimeout(() => {
-                                window.location.href = response.data.redirect;
-                            }, 800);
-                        } else {
-                            window.location.reload();
+                            textareaEdit.value = html;
                         }
-                    }, 800);
+                    } else {
+                        const textareaTambah = document.getElementById('contentTambah');
+                        if (quillTambah && textareaTambah) {
+                            const html = quillTambah.root.innerHTML;
+                            if (html === '<p><br></p>' || html.trim() === '') {
+                                if (window.showToast) {
+                                    window.showToast('Konten berita tidak boleh kosong.', 'error');
+                                } else {
+                                    alert('Konten berita tidak boleh kosong.');
+                                }
+                                resetSubmitBtn();
+                                return;
+                            }
+                            textareaTambah.value = html;
+                        }
+                    }
+                    
+                    const fileInput = form.querySelector('input[type="file"]');
+                    const file = fileInput ? fileInput.files[0] : null;
+                    
+                    const progressModalEl = document.getElementById('modalUploadProgress');
+                    if (!progressModalEl) {
+                        throw new Error("Elemen modalUploadProgress tidak ditemukan di halaman!");
+                    }
+                    
+                    let progressModal = bootstrap.Modal.getInstance(progressModalEl);
+                    if (!progressModal) {
+                        progressModal = new bootstrap.Modal(progressModalEl);
+                    }
+                    
+                    const progressBar = document.getElementById('uploadProgressBar');
+                    const progressText = document.getElementById('uploadProgressText');
+                    const colorImg = document.getElementById('progressPreviewColor');
+                    const grayImg = document.getElementById('progressPreviewGrayscale');
+                    
+                    // Set preview di progress modal
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            colorImg.src = e.target.result;
+                            grayImg.src = e.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        // Fallback gambar sekolah jika tidak upload gambar
+                        const fallbackSrc = "{{ asset('images/bw-sekolah.webp') }}";
+                        colorImg.src = fallbackSrc;
+                        grayImg.src = fallbackSrc;
+                    }
+                    
+                    // Reset progress
+                    progressBar.style.width = '0%';
+                    progressText.innerText = '0%';
+                    colorImg.style.clipPath = 'inset(0 100% 0 0)';
+                    
+                    // Sembunyikan modal tambah/edit yang sedang terbuka agar tidak tumpang tindih
+                    const activeModalEl = form.closest('.modal');
+                    let activeModal = null;
+                    if (activeModalEl) {
+                        activeModal = bootstrap.Modal.getInstance(activeModalEl);
+                        if (!activeModal) {
+                            activeModal = new bootstrap.Modal(activeModalEl);
+                        }
+                        activeModal.hide();
+                    }
+                    
+                    progressModal.show();
+                    
+                    // Build FormData
+                    const formData = new FormData(form);
+                    
+                    if (!window.axios) {
+                        throw new Error("Library Axios (window.axios) tidak terdeteksi di halaman!");
+                    }
+                    
+                    // Submit via Axios (Hapus header manual multipart/form-data agar boundary terpasang otomatis)
+                    window.axios.post(action, formData, {
+                        onUploadProgress: function(progressEvent) {
+                            if (progressEvent.total) {
+                                const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                                progressBar.style.width = percent + '%';
+                                progressText.innerText = percent + '%';
+                                
+                                // Animasi transisi grayscale ke color dari kiri ke kanan
+                                colorImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+                            }
+                        }
+                    })
+                    .then(response => {
+                        progressBar.style.width = '100%';
+                        progressText.innerText = '100%';
+                        colorImg.style.clipPath = 'inset(0 0% 0 0)';
+                        
+                        setTimeout(() => {
+                            progressModal.hide();
+                            if (response.data.success) {
+                                if (window.showToast) {
+                                    window.showToast(response.data.message, 'success');
+                                }
+                                setTimeout(() => {
+                                    window.location.href = response.data.redirect;
+                                }, 800);
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 800);
+                    })
+                    .catch(error => {
+                        progressModal.hide();
+                        console.error(error);
+                        
+                        resetSubmitBtn();
+                        
+                        let errorMsg = 'Gagal menyimpan berita.';
+                        if (error.response && error.response.data && error.response.data.errors) {
+                            const errors = error.response.data.errors;
+                            errorMsg = Object.values(errors).flat().join('<br>');
+                        } else if (error.response && error.response.data && error.response.data.message) {
+                            errorMsg = error.response.data.message;
+                        }
+                        
+                        if (window.showToast) {
+                            window.showToast(errorMsg, 'error', 6000);
+                        } else {
+                            alert(errorMsg);
+                        }
+                        
+                        // Buka kembali modal form menggunakan instance yang sama jika terjadi error
+                        if (activeModal) {
+                            activeModal.show();
+                        }
+                    });
+                } catch (submitError) {
+                    console.error("Submit error caught:", submitError);
+                    alert("JS Submit Error: " + submitError.message);
+                    resetSubmitBtn();
+                }
+            });
+        }
+    });
+
+    // AJAX Toggle Featured
+    document.querySelectorAll('.toggle-featured-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const btn = this;
+            const url = btn.getAttribute('data-url');
+            
+            btn.disabled = true;
+            
+            window.axios.post(url)
+                .then(response => {
+                    btn.disabled = false;
+                    if (response.data.success) {
+                        const icon = btn.querySelector('i');
+                        if (response.data.is_featured) {
+                            icon.className = 'bi bi-star-fill text-warning fs-5';
+                        } else {
+                            icon.className = 'bi bi-star text-muted fs-5';
+                        }
+                        if (window.showToast) {
+                            window.showToast(response.data.message, 'success');
+                        } else {
+                            // Fallback toast
+                            const toastEl = document.createElement('div');
+                            toastEl.className = 'position-fixed bottom-0 end-0 p-3';
+                            toastEl.style.zIndex = '9999';
+                            toastEl.innerHTML = `<div class="toast show align-items-center text-white bg-success border-0" role="alert"><div class="d-flex"><div class="toast-body">${response.data.message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
+                            document.body.appendChild(toastEl);
+                            setTimeout(() => toastEl.remove(), 3000);
+                        }
+                    }
                 })
                 .catch(error => {
-                    progressModal.hide();
+                    btn.disabled = false;
                     console.error(error);
-                    
-                    let errorMsg = 'Gagal menyimpan berita.';
-                    if (error.response && error.response.data && error.response.data.errors) {
-                        const errors = error.response.data.errors;
-                        errorMsg = Object.values(errors).flat().join('<br>');
-                    } else if (error.response && error.response.data && error.response.data.message) {
-                        errorMsg = error.response.data.message;
-                    }
-                    
+                    const errorMsg = error.response?.data?.message || 'Gagal mengubah status unggulan.';
                     if (window.showToast) {
-                        window.showToast(errorMsg, 'error', 6000);
+                        window.showToast(errorMsg, 'error');
                     } else {
                         alert(errorMsg);
                     }
-                    
-                    // Buka kembali modal form jika terjadi error
-                    if (activeModalEl) {
-                        const activeModal = new bootstrap.Modal(activeModalEl);
-                        activeModal.show();
-                    }
                 });
-            });
-        }
+        });
     });
 });
 </script>
