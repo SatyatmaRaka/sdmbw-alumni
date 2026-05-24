@@ -9,6 +9,9 @@
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
                 <h6 class="mb-0 fw-bold"><i class="bi bi-funnel-fill me-2"></i> Filter Kategori</h6>
+                <a href="{{ route('admin.forum-categories.index') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-tags-fill me-1"></i> Kelola Kategori
+                </a>
             </div>
             <div class="card-body">
                 <form action="{{ route('admin.forum.index') }}" method="GET" class="row g-3 align-items-end">

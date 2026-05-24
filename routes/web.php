@@ -129,7 +129,11 @@ Route::middleware(['auth', 'admin_only'])
         // Laporan Export PDF (Admin Only)
         Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
 
-        // Forum Moderation
+        // Forum Moderation & Categories
+        Route::resource('forum-categories', \App\Http\Controllers\Admin\ForumCategoryController::class)
+            ->parameters(['forum-categories' => 'forum'])
+            ->except(['show', 'create', 'edit']);
+
         Route::prefix('forum')->name('forum.')->group(function () {
             Route::get('/', [AdminForumController::class, 'index'])->name('index');
             Route::post('/thread/{thread}/pin', [AdminForumController::class, 'pin'])->name('pin');
