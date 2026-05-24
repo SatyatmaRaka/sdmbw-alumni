@@ -20,7 +20,7 @@ class AlumniMiddleware
         }
 
         // 2. Cek apakah user adalah alumni
-        if (Auth::user()->role !== 'alumni') {
+        if (Auth::user()->role !== \App\Enums\UserRole::ALUMNI->value) {
             abort(403, 'Akses ditolak. Halaman ini khusus untuk Alumni.');
         }
 

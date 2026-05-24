@@ -55,7 +55,7 @@ class Alumni extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'status_verifikasi' => 'pending',
+        'status_verifikasi' => \App\Enums\AlumniStatus::PENDING->value,
         'is_profile_complete' => false,
     ];
 
@@ -130,7 +130,7 @@ class Alumni extends Model
      */
     public function scopeVerified($query)
     {
-        return $query->where('status_verifikasi', 'verified');
+        return $query->where('status_verifikasi', \App\Enums\AlumniStatus::VERIFIED->value);
     }
 
     /**
@@ -141,7 +141,7 @@ class Alumni extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('status_verifikasi', 'pending');
+        return $query->where('status_verifikasi', \App\Enums\AlumniStatus::PENDING->value);
     }
 
     /**
@@ -152,7 +152,7 @@ class Alumni extends Model
      */
     public function scopeRejected($query)
     {
-        return $query->where('status_verifikasi', 'rejected');
+        return $query->where('status_verifikasi', \App\Enums\AlumniStatus::REJECTED->value);
     }
 
     /**

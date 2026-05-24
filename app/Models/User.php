@@ -90,7 +90,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === \App\Enums\UserRole::ADMIN->value;
     }
 
     /**
@@ -100,7 +100,7 @@ class User extends Authenticatable
      */
     public function isKepalaSekolah(): bool
     {
-        return $this->role === 'kepala_sekolah';
+        return $this->role === \App\Enums\UserRole::KEPALA_SEKOLAH->value;
     }
 
     /**
@@ -110,7 +110,7 @@ class User extends Authenticatable
      */
     public function isAlumni(): bool
     {
-        return $this->role === 'alumni';
+        return $this->role === \App\Enums\UserRole::ALUMNI->value;
     }
 
     /**
@@ -147,7 +147,7 @@ class User extends Authenticatable
      */
     public function scopeAdmin($query)
     {
-        return $query->where('role', 'admin');
+        return $query->where('role', \App\Enums\UserRole::ADMIN->value);
     }
 
     /**
@@ -158,7 +158,7 @@ class User extends Authenticatable
      */
     public function scopeAlumni($query)
     {
-        return $query->where('role', 'alumni');
+        return $query->where('role', \App\Enums\UserRole::ALUMNI->value);
     }
 
     /**

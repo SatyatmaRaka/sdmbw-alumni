@@ -20,8 +20,9 @@ class KepalaSekolahMiddleware
             return redirect()->route('login');
         }
 
-        if (Auth::user()->role !== 'admin' && Auth::user()->role !== 'kepala_sekolah') {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        // 2. Cek apakah user adalah kepala sekolah atau admin
+        if (!in_array(Auth::user()->role, [\App\Enums\UserRole::KEPALA_SEKOLAH->value, \App\Enums\UserRole::ADMIN->value])) {
+            abort(403, 'Akses ditolak. Halaman ini khusus untuk Kepala Sekolah.');
         }
 
         return $next($request);

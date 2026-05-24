@@ -20,11 +20,8 @@ class AdminOnlyMiddleware
             return redirect()->route('login');
         }
 
-        if (Auth::user()->role !== 'admin') {
-            if (Auth::user()->role === 'kepala_sekolah') {
-                return redirect()->route('kepala_sekolah.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
-            }
-            return redirect()->route('login');
+        if (Auth::user()->role !== \App\Enums\UserRole::ADMIN->value) {
+            abort(403, 'Akses ditolak. Halaman ini khusus untuk Administrator utama.');
         }
 
         return $next($request);

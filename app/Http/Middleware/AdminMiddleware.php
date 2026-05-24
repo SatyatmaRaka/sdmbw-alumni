@@ -28,7 +28,7 @@ class AdminMiddleware
 
         // 2. Cek apakah role user adalah 'admin'
         // Kita langsung cek kolom 'role' agar tidak bergantung pada fungsi tambahan
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::user()->role !== \App\Enums\UserRole::ADMIN->value) {
             // Kita gunakan abort 403 (Forbidden) atau lempar ke login
             abort(403, 'Akses ditolak. Halaman ini khusus untuk administrator.');
         }

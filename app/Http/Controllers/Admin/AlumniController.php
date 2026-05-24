@@ -105,7 +105,7 @@ class AlumniController extends Controller
     public function verify(Request $request, Alumni $alumni)
     {
         $request->validate([
-            'status' => 'required|in:verified,pending,rejected',
+            'status' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\AlumniStatus::class)],
         ]);
 
         $status = $request->input('status');
@@ -116,26 +116,26 @@ class AlumniController extends Controller
 
             if ($alumni->user) {
                 $alumni->user->update([
-                    'is_active' => ($status === 'verified') ? 1 : 0,
+                    'is_active' => ($status === \App\Enums\AlumniStatus::VERIFIED->value) ? 1 : 0,
                 ]);
             }
 
             // Gunakan konstanta ACTION_* dari AdminLog — tidak ada string literal
             $action = match($status) {
-                'verified' => AdminLog::ACTION_VERIFY_ALUMNI,
-                'rejected' => AdminLog::ACTION_REJECT_ALUMNI,
-                'pending'  => AdminLog::ACTION_PENDING_ALUMNI,
+                \App\Enums\AlumniStatus::VERIFIED->value => AdminLog::ACTION_VERIFY_ALUMNI,
+                \App\Enums\AlumniStatus::REJECTED->value => AdminLog::ACTION_REJECT_ALUMNI,
+                \App\Enums\AlumniStatus::PENDING->value  => AdminLog::ACTION_PENDING_ALUMNI,
                 default    => AdminLog::ACTION_UPDATE_ALUMNI,
             };
 
             $description = match($status) {
-                'verified' => "Memverifikasi alumni: {$alumni->nama_lengkap} "
+                \App\Enums\AlumniStatus::VERIFIED->value => "Memverifikasi alumni: {$alumni->nama_lengkap} "
                             . "(NISN: {$alumni->nisn}, Angkatan: {$alumni->angkatan?->nama_angkatan}). "
                             . "Akun diaktifkan.",
-                'rejected' => "Menolak pendaftaran alumni: {$alumni->nama_lengkap} "
+                \App\Enums\AlumniStatus::REJECTED->value => "Menolak pendaftaran alumni: {$alumni->nama_lengkap} "
                             . "(NISN: {$alumni->nisn}, Angkatan: {$alumni->angkatan?->nama_angkatan}). "
                             . "Akun dinonaktifkan.",
-                'pending'  => "Mengubah status {$alumni->nama_lengkap} (NISN: {$alumni->nisn}) "
+                \App\Enums\AlumniStatus::PENDING->value  => "Mengubah status {$alumni->nama_lengkap} (NISN: {$alumni->nisn}) "
                             . "kembali ke Pending.",
                 default    => "Mengubah status verifikasi {$alumni->nama_lengkap} ke {$status}.",
             };
@@ -151,8 +151,8 @@ class AlumniController extends Controller
             $this->clearDashboardCache();
 
             $message = match($status) {
-                'verified' => 'Alumni berhasil diverifikasi dan akun diaktifkan.',
-                'rejected' => 'Pendaftaran alumni berhasil ditolak dan akun dinonaktifkan.',
+                \App\Enums\AlumniStatus::VERIFIED->value => 'Alumni berhasil diverifikasi dan akun diaktifkan.',
+                \App\Enums\AlumniStatus::REJECTED->value => 'Pendaftaran alumni berhasil ditolak dan akun dinonaktifkan.',
                 default    => 'Status verifikasi berhasil diperbarui.',
             };
 
@@ -369,7 +369,7 @@ class AlumniController extends Controller
             DB::table('alumni_fotos')->delete();
             
             // 2. Hapus Akun User (Hanya yang rolenya 'alumni')
-            User::where('role', 'alumni')->forceDelete();
+            User::where('role', \App\Enums\UserRole::ALUMNI->value)->forceDelete();
             
             // 3. Hapus Data Alumni
             Alumni::query()->forceDelete();

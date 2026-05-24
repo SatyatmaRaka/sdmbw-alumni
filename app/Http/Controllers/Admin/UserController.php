@@ -17,7 +17,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::whereIn('role', ['admin', 'kepala_sekolah'])
+        $users = User::whereIn('role', [\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])
             ->latest()
             ->paginate(15);
 
@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|max:255|unique:users,username',
-            'role'     => ['required', Rule::in(['admin', 'kepala_sekolah'])],
+            'role'     => ['required', Rule::in([\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])],
             'password' => 'required|string|min:6|confirmed',
         ], [
             'username.unique'    => 'Username ini sudah digunakan.',
@@ -72,7 +72,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         // Cegah admin mengedit role pengguna selain admin/kepala sekolah melalui URL ini
-        if (!in_array($user->role, ['admin', 'kepala_sekolah'])) {
+        if (!in_array($user->role, [\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])) {
             abort(403, 'Akses tidak diizinkan.');
         }
 
@@ -84,20 +84,20 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if (!in_array($user->role, ['admin', 'kepala_sekolah'])) {
+        if (!in_array($user->role, [\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])) {
             abort(403, 'Akses tidak diizinkan.');
         }
 
         $request->validate([
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role'     => ['required', Rule::in(['admin', 'kepala_sekolah'])],
+            'role'     => ['required', Rule::in([\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])],
             'password' => 'nullable|string|min:6|confirmed',
         ]);
 
         $user->username = $request->username;
         
         // Mencegah user menghapus hak akses admin dari dirinya sendiri
-        if ($user->id !== Auth::id() || $request->role === 'admin') {
+        if ($user->id !== Auth::id() || $request->role === \App\Enums\UserRole::ADMIN->value) {
             $user->role = $request->role;
         }
 
@@ -124,7 +124,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if (!in_array($user->role, ['admin', 'kepala_sekolah'])) {
+        if (!in_array($user->role, [\App\Enums\UserRole::ADMIN->value, \App\Enums\UserRole::KEPALA_SEKOLAH->value])) {
             abort(403, 'Akses tidak diizinkan.');
         }
 
