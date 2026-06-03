@@ -25,7 +25,7 @@ class LandingController extends Controller
                 'total_alumni' => Alumni::verified()->count(),
                 'total_angkatan' => Angkatan::count(),
                 'profil_lengkap' => Alumni::where('is_profile_complete', true)->count(),
-                'total_instansi' => \Illuminate\Support\Facades\DB::table('alumni_pendidikan')->distinct('nama_instansi')->count('nama_instansi') 
+                'total_instansi' => \Illuminate\Support\Facades\DB::table('alumni_pendidikan')->distinct('nama_instansi')->count('nama_instansi')
                                    + \Illuminate\Support\Facades\DB::table('alumni_pekerjaan')->distinct('nama_perusahaan')->count('nama_perusahaan'),
             ];
         });
@@ -33,11 +33,11 @@ class LandingController extends Controller
         $faqs = \Illuminate\Support\Facades\Cache::remember('landing_faqs', 60 * 60, function () {
             return Faq::where('is_active', true)->orderBy('order_num', 'asc')->get();
         });
-        
+
         $testimonis = \Illuminate\Support\Facades\Cache::remember('landing_testimonis', 60 * 60, function () {
             return Testimoni::with(['alumni.fotos', 'alumni.angkatan'])
                 ->where('is_active', true)
-                ->where('is_featured', true)
+                ->orderBy('is_featured', 'desc')
                 ->latest()
                 ->take(6)
                 ->get();

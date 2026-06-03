@@ -212,7 +212,9 @@ class LaporanController extends Controller
                 'angkatan'           => $item->angkatan->nama_angkatan ?? '-',
                 'pekerjaan_terkini'  => $this->formatPekerjaan($item->pekerjaan),
                 'pendidikan_terakhir'=> $this->formatPendidikan($item->pendidikan),
-                'kota_domisili'      => $item->kota ?? '-',
+                'alamat'             => $item->alamat ?? '-',
+                'no_hp'              => ($item->no_hp && $item->show_no_hp) ? $item->no_hp : '-',
+                'status_verifikasi'  => $item->status_verifikasi ?? '-',
             ];
         });
 

@@ -153,12 +153,13 @@
         }
 
         .no-col    { width: 4%; }
-        .nisn-col  { width: 10%; }
-        .nama-col  { width: 20%; }
-        .akt-col   { width: 11%; }
-        .pek-col   { width: 22%; }
-        .pend-col  { width: 22%; }
-        .kota-col  { width: 11%; }
+        .nisn-col  { width: 9%; }
+        .nama-col  { width: 18%; }
+        .akt-col   { width: 9%; }
+        .pek-col   { width: 20%; }
+        .pend-col  { width: 20%; }
+        .alamat-col { width: 14%; }
+        .status-col { width: 6%; }
 
         .nama-bold { font-weight: bold; }
 
@@ -284,7 +285,8 @@
                 <th class="akt-col">Angkatan</th>
                 <th class="pek-col">Pekerjaan Terkini</th>
                 <th class="pend-col">Pendidikan Terakhir</th>
-                <th class="kota-col">Kota Domisili</th>
+                <th class="alamat-col">Alamat</th>
+                <th class="status-col text-center">Status</th>
             </tr>
         </thead>
         <tbody>
@@ -296,11 +298,12 @@
                     <td>{{ $item['angkatan'] }}</td>
                     <td>{{ $item['pekerjaan_terkini'] }}</td>
                     <td>{{ $item['pendidikan_terakhir'] }}</td>
-                    <td>{{ $item['kota_domisili'] }}</td>
+                    <td>{{ $item['alamat'] }}</td>
+                    <td class="text-center">{{ ucfirst($item['status_verifikasi']) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center" style="padding: 20px; color: #666;">
+                    <td colspan="8" class="text-center" style="padding: 20px; color: #666;">
                         Tidak ada data alumni untuk ditampilkan.
                     </td>
                 </tr>
