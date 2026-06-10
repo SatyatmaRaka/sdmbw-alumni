@@ -41,16 +41,26 @@
         </div>
 
         <div class="col-lg-5 d-none d-lg-block fade-in-up" style="animation-delay: 0.4s">
-          <div class="hero-floating-card glass-card p-4 text-center p-5">
-            <div class="card-icon-circle mx-auto mb-4">
-              <i class="bi bi-mortarboard fs-1 text-primary"></i>
+          <div class="hero-floating-card p-4 text-center p-5">
+            <div class="slide-content-wrapper" style="min-height: 180px;">
+              <transition name="fade-slide" mode="out-in">
+                <div :key="currentSlide">
+                  <div class="card-icon-circle mx-auto mb-4">
+                    <i :class="['bi', slides[currentSlide].icon, 'fs-1', 'text-accent']"></i>
+                  </div>
+                  <h3 class="fw-bold mb-2 text-white">{{ slides[currentSlide].title }}</h3>
+                  <p class="text-white text-opacity-75 small mb-0">{{ slides[currentSlide].text }}</p>
+                </div>
+              </transition>
             </div>
-            <h3 class="fw-bold mb-2">Pendidikan Berkualitas</h3>
-            <p class="text-muted small">Mencetak generasi unggul yang berakhlak mulia dan berprestasi.</p>
             <div class="d-flex justify-content-center gap-2 mt-4">
-              <div class="dot active"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
+              <div 
+                v-for="(_, index) in slides" 
+                :key="index"
+                class="dot cursor-pointer" 
+                :class="{ active: currentSlide === index }"
+                @click="setSlide(index)"
+              ></div>
             </div>
           </div>
         </div>
@@ -86,7 +96,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   user:        { type: Object, default: null },
@@ -97,6 +107,38 @@ const props = defineProps({
 });
 
 const handleImageError = (e) => { e.target.style.display = 'none'; };
+
+// Slide Logic
+const slides = [
+  { icon: 'bi-mortarboard', title: 'Pendidikan Berkualitas', text: 'Mencetak generasi unggul yang berakhlak mulia dan berprestasi.' },
+  { icon: 'bi-people', title: 'Jejaring Kuat', text: 'Silaturahmi tanpa batas bersama alumni lintas angkatan.' },
+  { icon: 'bi-briefcase', title: 'Peluang Karir', text: 'Saling bersinergi dan berbagi relasi pekerjaan profesional.' }
+];
+
+const currentSlide = ref(0);
+let slideInterval = null;
+
+const setSlide = (index) => {
+  currentSlide.value = index;
+  resetInterval();
+};
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % slides.length;
+};
+
+const resetInterval = () => {
+  if (slideInterval) clearInterval(slideInterval);
+  slideInterval = setInterval(nextSlide, 5000);
+};
+
+onMounted(() => {
+  slideInterval = setInterval(nextSlide, 5000);
+});
+
+onUnmounted(() => {
+  if (slideInterval) clearInterval(slideInterval);
+});
 
 const statsItems = computed(() => [
   { label: 'Alumni',        value: props.stats?.total_alumni   || 0, icon: 'bi-people-fill',      color: 'text-primary', bg: 'bg-primary-subtle' },
@@ -155,17 +197,27 @@ const statsItems = computed(() => [
 .hero-floating-card {
   border-radius: 30px;
   transform: perspective(1000px) rotateY(-5deg);
-  box-shadow: 20px 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
   transition: all 0.5s ease;
+  background: rgba(17, 37, 52, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
 }
 .hero-floating-card:hover {
   transform: perspective(1000px) rotateY(0deg) translateY(-10px);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  border: 1px solid rgba(232, 200, 122, 0.3);
 }
 .card-icon-circle {
   width: 100px; height: 100px;
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2) inset;
 }
 
 .stat-card-premium {
@@ -214,6 +266,21 @@ const statsItems = computed(() => [
   100% { opacity: 0; top: 30px; }
 }
 
-.dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; }
+.cursor-pointer { cursor: pointer; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s ease; }
 .dot.active { background: #E8C87A; width: 24px; border-radius: 4px; }
+
+/* Transition rules for slide */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
 </style>

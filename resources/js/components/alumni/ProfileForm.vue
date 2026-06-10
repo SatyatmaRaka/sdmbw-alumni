@@ -238,11 +238,11 @@ const submitProfile = async () => {
     if (edu.nama_instansi) {
       formData.append(`pendidikan[${i}][jenjang]`, edu.jenjang);
       formData.append(`pendidikan[${i}][nama_instansi]`, edu.nama_instansi);
-      formData.append(`pendidikan[${i}][tahun_masuk]`, edu.tahun_masuk);
-      formData.append(`pendidikan[${i}][tahun_lulus]`, edu.tahun_lulus);
+      if (edu.tahun_masuk) formData.append(`pendidikan[${i}][tahun_masuk]`, edu.tahun_masuk);
+      if (edu.tahun_lulus) formData.append(`pendidikan[${i}][tahun_lulus]`, edu.tahun_lulus);
       formData.append(`pendidikan[${i}][is_ongoing]`, edu.is_ongoing ? '1' : '0');
-      formData.append(`pendidikan[${i}][fakultas]`, edu.fakultas || '');
-      formData.append(`pendidikan[${i}][program_studi]`, edu.program_studi || '');
+      if (edu.fakultas) formData.append(`pendidikan[${i}][fakultas]`, edu.fakultas);
+      if (edu.program_studi) formData.append(`pendidikan[${i}][program_studi]`, edu.program_studi);
     }
   });
 

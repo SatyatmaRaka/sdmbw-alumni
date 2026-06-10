@@ -9,35 +9,43 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\CacheService;
+use App\Enums\AlumniStatus;
 
 class LaporanController extends Controller
 {
+    private CacheService $cacheService;
+
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
     /**
      * Tampilkan halaman laporan utama
      */
     public function index(Request $request)
     {
         // 1. Statistik Umum — di-cache 10 menit
-        $stats = Cache::remember('laporan_general_stats', 600, function () {
+        $stats = Cache::remember(CacheService::LAPORAN_GENERAL_STATS, 600, function () {
             return [
                 'total_alumni'         => Alumni::count(),
-                'alumni_verified'      => Alumni::where('status_verifikasi', 'verified')->count(),
-                'alumni_pending'       => Alumni::where('status_verifikasi', 'pending')->count(),
-                'alumni_rejected'      => Alumni::where('status_verifikasi', 'rejected')->count(),
+                'alumni_verified'      => Alumni::where('status_verifikasi', AlumniStatus::VERIFIED->value)->count(),
+                'alumni_pending'       => Alumni::where('status_verifikasi', AlumniStatus::PENDING->value)->count(),
+                'alumni_rejected'      => Alumni::where('status_verifikasi', AlumniStatus::REJECTED->value)->count(),
                 'profil_lengkap'       => Alumni::where('is_profile_complete', true)->count(),
                 'profil_belum_lengkap' => Alumni::where('is_profile_complete', false)->count(),
             ];
         });
 
         // 2. Statistik per Angkatan — di-cache 10 menit
-        $angkatanStats = Cache::remember('laporan_angkatan_stats', 600, function () {
+        $angkatanStats = Cache::remember(CacheService::LAPORAN_ANGKATAN_STATS, 600, function () {
             return Angkatan::withCount([
                 'alumni',
                 'alumni as verified_count' => function ($query) {
-                    $query->where('status_verifikasi', 'verified');
+                    $query->where('status_verifikasi', AlumniStatus::VERIFIED->value);
                 },
                 'alumni as pending_count' => function ($query) {
-                    $query->where('status_verifikasi', 'pending');
+                    $query->where('status_verifikasi', AlumniStatus::PENDING->value);
                 },
                 'alumni as complete_count' => function ($query) {
                     $query->where('is_profile_complete', true);
@@ -48,7 +56,7 @@ class LaporanController extends Controller
         });
 
         // 3. Alumni berdasarkan Instansi Pendidikan Terpopuler — di-cache 10 menit
-        $pendidikanStats = Cache::remember('laporan_pendidikan_stats', 600, function () {
+        $pendidikanStats = Cache::remember(CacheService::LAPORAN_PENDIDIKAN_STATS, 600, function () {
             return DB::table('alumni_pendidikan')
                 ->select('nama_instansi as pendidikan_lanjutan', DB::raw('count(*) as total'))
                 ->whereNotNull('nama_instansi')
@@ -60,7 +68,7 @@ class LaporanController extends Controller
         });
 
         // 4. Alumni berdasarkan Perusahaan/Pekerjaan Terpopuler — di-cache 10 menit
-        $pekerjaanStats = Cache::remember('laporan_pekerjaan_stats', 600, function () {
+        $pekerjaanStats = Cache::remember(CacheService::LAPORAN_PEKERJAAN_STATS, 600, function () {
             return DB::table('alumni_pekerjaan')
                 ->select('nama_perusahaan as pekerjaan', DB::raw('count(*) as total'))
                 ->whereNotNull('nama_perusahaan')
@@ -112,9 +120,9 @@ class LaporanController extends Controller
         // Statistik angkatan
         $stats = [
             'total'    => $alumni->count(),
-            'verified' => $alumni->where('status_verifikasi', 'verified')->count(),
-            'pending'  => $alumni->where('status_verifikasi', 'pending')->count(),
-            'rejected' => $alumni->where('status_verifikasi', 'rejected')->count(),
+            'verified' => $alumni->where('status_verifikasi', AlumniStatus::VERIFIED->value)->count(),
+            'pending'  => $alumni->where('status_verifikasi', AlumniStatus::PENDING->value)->count(),
+            'rejected' => $alumni->where('status_verifikasi', AlumniStatus::REJECTED->value)->count(),
             'lengkap'  => $alumni->where('is_profile_complete', true)->count(),
             'belum_lengkap' => $alumni->where('is_profile_complete', false)->count(),
         ];
@@ -236,14 +244,4 @@ class LaporanController extends Controller
         return $pdf->download($filename);
     }
 
-    /**
-     * Hapus semua cache laporan agar data selalu up-to-date
-     */
-    public static function clearLaporanCache(): void
-    {
-        Cache::forget('laporan_general_stats');
-        Cache::forget('laporan_angkatan_stats');
-        Cache::forget('laporan_pendidikan_stats');
-        Cache::forget('laporan_pekerjaan_stats');
-    }
 }

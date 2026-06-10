@@ -11,6 +11,13 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class AlumniProfileService
 {
+    protected CacheService $cacheService;
+
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
+
     /**
      * Update data profil alumni termasuk relasi dan foto.
      */
@@ -66,6 +73,9 @@ class AlumniProfileService
             $alumni->update(['is_profile_complete' => $alumni->isDataComplete()]);
 
             DB::commit();
+
+            // Clear cache setelah profil berhasil diupdate
+            $this->cacheService->clearAllAlumniRelated();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

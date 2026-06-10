@@ -62,48 +62,6 @@
                         </td>
                     </tr>
 
-                    <!-- Edit Modal -->
-                    <div class="modal fade" id="modalEditFaq{{ $faq->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 shadow rounded-4">
-                                <div class="modal-header border-0 pb-0">
-                                    <h5 class="fw-bold mb-0">Edit FAQ</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form action="{{ route('admin.faqs.update', $faq) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Pertanyaan</label>
-                                            <input type="text" name="question" class="form-control rounded-3" value="{{ $faq->question }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Jawaban</label>
-                                            <textarea name="answer" class="form-control rounded-3" rows="4" required>{{ $faq->answer }}</textarea>
-                                        </div>
-                                        <div class="row g-3">
-                                            <div class="col-6">
-                                                <label class="form-label small fw-bold text-muted">Urutan</label>
-                                                <input type="number" name="order_num" class="form-control rounded-3" value="{{ $faq->order_num }}">
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
-                                                <div class="form-check form-switch mt-2">
-                                                    <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $faq->is_active ? 'checked' : '' }}>
-                                                    <label class="form-check-label small">Tampilkan di Web</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer border-0 pt-0">
-                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                     @empty
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
@@ -124,6 +82,51 @@
         </div>
     </div>
 </div>
+
+@foreach($faqs as $faq)
+<!-- Edit Modal -->
+<div class="modal fade" id="modalEditFaq{{ $faq->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold mb-0">Edit FAQ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('admin.faqs.update', $faq) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Pertanyaan</label>
+                        <input type="text" name="question" class="form-control rounded-3" value="{{ $faq->question }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Jawaban</label>
+                        <textarea name="answer" class="form-control rounded-3" rows="4" required>{{ $faq->answer }}</textarea>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Urutan</label>
+                            <input type="number" name="order_num" class="form-control rounded-3" value="{{ $faq->order_num }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $faq->is_active ? 'checked' : '' }}>
+                                <label class="form-check-label small">Tampilkan di Web</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 <!-- Tambah Modal -->
 <div class="modal fade" id="modalTambahFaq" tabindex="-1">

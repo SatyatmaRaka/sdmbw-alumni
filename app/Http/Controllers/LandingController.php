@@ -31,7 +31,10 @@ class LandingController extends Controller
         });
 
         $faqs = \Illuminate\Support\Facades\Cache::remember('landing_faqs', 60 * 60, function () {
-            return Faq::where('is_active', true)->orderBy('order_num', 'asc')->get();
+            return Faq::where('is_active', true)
+                ->orderBy('order_num', 'asc')
+                ->take(5)
+                ->get();
         });
 
         $testimonis = \Illuminate\Support\Facades\Cache::remember('landing_testimonis', 60 * 60, function () {

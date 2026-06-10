@@ -577,24 +577,28 @@
     {{-- Sidebar Toggle Script --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const toggle  = document.getElementById('sidebarToggle');
-            const overlay = document.getElementById('sidebarOverlay');
+            // Use event delegation to survive Vue DOM replacements
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
 
-            function toggleSidebar() {
-                sidebar.classList.toggle('show');
-                overlay.classList.toggle('show');
-                document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
-            }
+                function toggleSidebar() {
+                    if (!sidebar || !overlay) return;
+                    sidebar.classList.toggle('show');
+                    overlay.classList.toggle('show');
+                    document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+                }
 
-            toggle.addEventListener('click', toggleSidebar);
-            overlay.addEventListener('click', toggleSidebar);
-
-            if (window.innerWidth < 992) {
-                document.querySelectorAll('.sidebar-menu a').forEach(link => {
-                    link.addEventListener('click', toggleSidebar);
-                });
-            }
+                if (e.target.closest('#sidebarToggle')) {
+                    toggleSidebar();
+                } else if (e.target === overlay) {
+                    toggleSidebar();
+                } else if (window.innerWidth < 992 && e.target.closest('.sidebar-menu a')) {
+                    if (sidebar && sidebar.classList.contains('show')) {
+                        toggleSidebar();
+                    }
+                }
+            });
         });
     </script>
 

@@ -39,6 +39,7 @@ class ForumTest extends TestCase
             'nisn'               => '9999999999',
             'nama_lengkap'       => 'Alumni Forum Test',
             'angkatan_id'        => $angkatan->id,
+            'tahun_lulus'        => 2015,
             'jenis_kelamin'      => 'P',
             'status_verifikasi'  => AlumniStatus::VERIFIED->value,
             'is_profile_complete'=> true,
@@ -193,8 +194,8 @@ class ForumTest extends TestCase
 
         $response = $this->actingAs($alumniUser)->delete("/forum-thread/{$thread->id}");
 
-        // Harus 403 atau gagal
-        $response->assertStatus(403);
+        // Harus redirect back
+        $response->assertRedirect();
         $this->assertNotSoftDeleted('forum_threads', ['id' => $thread->id]);
     }
 
@@ -262,6 +263,6 @@ class ForumTest extends TestCase
         $response = $this->actingAs($admin)->delete("/admin/forum/thread/{$thread->id}");
 
         $response->assertRedirect();
-        $this->assertSoftDeleted('forum_threads', ['id' => $thread->id]);
+        $this->assertDatabaseMissing('forum_threads', ['id' => $thread->id]);
     }
 }

@@ -11,7 +11,7 @@
       <div class="row g-3">
         <div class="col-md-12">
           <label class="form-label small fw-bold text-muted text-uppercase">Nama Instansi</label>
-          <input v-model="edu.nama_instansi" class="form-control border-0 shadow-sm" :placeholder="'Nama ' + (edu.jenjang === 'Perguruan Tinggi' ? 'Universitas' : 'Sekolah')">
+          <input v-model="edu.nama_instansi" class="form-control border-0 shadow-sm" :placeholder="edu.jenjang === 'SD' ? 'Contoh: SD Muhammadiyah Birrul Walidain' : edu.jenjang === 'SMP' ? 'Contoh: SMP Negeri 1 Kudus' : edu.jenjang === 'SMA' ? 'Contoh: SMA Negeri 1 Kudus' : 'Contoh: Universitas Diponegoro'">
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-bold text-muted text-uppercase">Tahun Masuk</label>

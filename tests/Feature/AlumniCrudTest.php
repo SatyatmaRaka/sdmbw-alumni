@@ -44,6 +44,7 @@ class AlumniCrudTest extends TestCase
             'nisn'              => '1234567890',
             'nama_lengkap'      => 'Budi Santoso',
             'angkatan_id'       => $angkatan->id,
+            'tahun_lulus'       => 2010,
             'jenis_kelamin'     => 'L',
             'status_verifikasi' => AlumniStatus::PENDING->value,
         ], $overrides));

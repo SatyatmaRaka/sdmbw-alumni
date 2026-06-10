@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sedang Offline – Alumni SDMBW</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #1B3A52;
+            --color-accent: #EAE0CF;
+            --color-bg: #EEF2F7;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--color-bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .offline-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(27, 58, 82, 0.12);
+            padding: 3rem 2.5rem;
+            text-align: center;
+            max-width: 440px;
+            width: 100%;
+        }
+
+        .logo-wrap {
+            width: 80px;
+            height: 80px;
+            background: var(--color-accent);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(234, 224, 207, 0.5);
+        }
+
+        .logo-wrap img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+        }
+
+        .logo-wrap i {
+            font-size: 2.2rem;
+            color: var(--color-primary);
+        }
+
+        .school-name {
+            font-family: 'DM Serif Display', serif;
+            color: var(--color-primary);
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 0.25rem;
+        }
+
+        .school-sub {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            margin-bottom: 2rem;
+        }
+
+        .offline-icon-wrap {
+            width: 80px;
+            height: 80px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: pulse-offline 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-offline {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.15); }
+            50% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+        }
+
+        .offline-icon-wrap i {
+            font-size: 2.4rem;
+            color: #ef4444;
+        }
+
+        .offline-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.6rem;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+        }
+
+        .offline-message {
+            color: #64748b;
+            font-size: 0.925rem;
+            line-height: 1.65;
+            margin-bottom: 2rem;
+        }
+
+        .btn-retry {
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-retry:hover {
+            background: #2a5378;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(27, 58, 82, 0.3);
+            color: #fff;
+        }
+
+        .btn-retry:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .footer-text {
+            color: #94a3b8;
+            font-size: 0.78rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        {{-- Logo & Branding --}}
+        <div class="logo-wrap">
+            <img src="/images/logo-sdmbw.png" alt="Logo SDMBW"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+            <i class="bi bi-mortarboard-fill" style="display:none;"></i>
+        </div>
+        <p class="school-name">Alumni SDMBW</p>
+        <p class="school-sub">SD Muhammadiyah Birrul Walidain Kudus</p>
+
+        {{-- Offline Status --}}
+        <div class="offline-icon-wrap">
+            <i class="bi bi-wifi-off"></i>
+        </div>
+
+        <h1 class="offline-title">Kamu Sedang Offline</h1>
+        <p class="offline-message">
+            Hubungkan ke internet untuk melanjutkan menggunakan
+            Sistem Informasi Alumni SDMBW.
+        </p>
+
+        <button class="btn-retry" onclick="retryConnection()">
+            <i class="bi bi-arrow-clockwise" id="retry-icon"></i>
+            Coba Lagi
+        </button>
+
+        <div class="divider"></div>
+
+        <p class="footer-text">
+            &copy; {{ date('Y') }} SD Muhammadiyah Birrul Walidain Kudus
+        </p>
+    </div>
+
+    <script>
+        function retryConnection() {
+            const icon = document.getElementById('retry-icon');
+            icon.style.animation = 'spin 0.8s linear infinite';
+
+            const style = document.createElement('style');
+            style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+            document.head.appendChild(style);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 600);
+        }
+
+        // Otomatis redirect saat kembali online
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

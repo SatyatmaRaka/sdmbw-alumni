@@ -6,18 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Alumni;
 use App\Models\Angkatan;
 use App\Services\AlumniService;
+use App\Services\CacheService;
 use App\Http\Requests\UpdateAdminAlumniRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Exception;
 
 class AlumniController extends Controller
 {
     private AlumniService $alumniService;
+    private CacheService $cacheService;
 
-    public function __construct(AlumniService $alumniService)
+    public function __construct(AlumniService $alumniService, CacheService $cacheService)
     {
         $this->alumniService = $alumniService;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -237,7 +241,7 @@ class AlumniController extends Controller
             $import = new \App\Imports\AlumniImport(Auth::id());
             \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
 
-            $this->alumniService->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
             
             return redirect()->route('admin.alumni.index')
                 ->with('success', 'Data alumni berhasil di-import! Silakan cek daftar di bawah.');
@@ -259,9 +263,15 @@ class AlumniController extends Controller
     {
         $request->validate([
             'confirmation' => 'required|string|in:HAPUS SEMUA DATA',
+            'password'     => 'required|string',
         ], [
-            'confirmation.in' => 'Kata konfirmasi tidak sesuai. Ketik "HAPUS SEMUA DATA" untuk melanjutkan.',
+            'confirmation.in'   => 'Kata konfirmasi tidak sesuai. Ketik "HAPUS SEMUA DATA" untuk melanjutkan.',
+            'password.required' => 'Password admin wajib diisi untuk verifikasi.',
         ]);
+
+        if (!Hash::check($request->password, Auth::user()->password)) {
+            return back()->with('error', 'Password yang Anda masukkan salah. Proses penghapusan massal dibatalkan.');
+        }
 
         try {
             $this->alumniService->deleteAllAlumni(Auth::id());

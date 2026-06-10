@@ -1,0 +1,112 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\AngkatanController;
+use App\Http\Controllers\Admin\AlumniController as AdminAlumni;
+use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\ForumController as AdminForumController;
+use App\Http\Controllers\Admin\UserController;
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes (Admin Only)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'admin_only'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        
+        // Dashboard Admin
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+
+        // Kelola Pengguna (Admin & Kepala Sekolah)
+        Route::resource('users', UserController::class)->except(['show']);
+
+        // Kelola Angkatan
+        Route::resource('angkatan', AngkatanController::class);
+
+        // Kelola Alumni (Actions & Static Routes)
+        Route::prefix('alumni')->name('alumni.')->controller(AdminAlumni::class)->group(function () {
+            // Form & Action: Reset password by NISN
+            Route::get('/reset-password-form', 'resetPasswordForm')->name('resetPasswordForm');
+            Route::post('/reset-password-nisn', 'resetPasswordByNisn')->name('resetPasswordByNisn');
+
+            // Form & Action: Export Excel
+            Route::get('/export-form', 'exportForm')->name('exportForm');
+            Route::post('/export', 'export')->name('export');
+
+            // Form & Action: Import Excel
+            Route::get('/import-form', 'importForm')->name('importForm');
+            Route::get('/import-template', 'downloadTemplate')->name('downloadTemplate');
+            Route::post('/import', 'import')->name('import');
+
+            // Bulk Action: Delete All
+            Route::post('/delete-all', 'deleteAll')->name('deleteAll');
+
+            // Wildcard action routes
+            Route::get('/{alumni}/edit', 'edit')->name('edit');
+            Route::put('/{alumni}', 'update')->name('update');
+            Route::put('/{alumni}/verify', 'verify')->name('verify');
+            Route::post('/{alumni}/reset-password', 'resetPassword')->name('reset-password');
+            Route::delete('/{alumni}', 'destroy')->name('destroy');
+        });
+
+        // FAQ & Testimoni (CMS Publik)
+        Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->except(['show']);
+        Route::resource('testimonis', \App\Http\Controllers\Admin\TestimoniController::class)->except(['show']);
+        Route::resource('comments', \App\Http\Controllers\Admin\CommentController::class)->only(['index', 'destroy']);
+        Route::post('beritas/{berita}/toggle-featured', [\App\Http\Controllers\Admin\BeritaController::class, 'toggleFeatured'])->name('beritas.toggle-featured');
+        Route::resource('beritas', \App\Http\Controllers\Admin\BeritaController::class)->except(['show']);
+
+        // Activity Logs (Actions)
+        Route::prefix('logs')->name('logs.')->group(function () {
+            Route::delete('/{log}', [ActivityLogController::class, 'destroy'])->name('destroy');
+            Route::delete('/', [ActivityLogController::class, 'clearAll'])->name('clearAll');
+        });
+
+        // Laporan Export PDF (Admin Only)
+        Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+
+        // Forum Moderation & Categories
+        Route::resource('forum-categories', \App\Http\Controllers\Admin\ForumCategoryController::class)
+            ->parameters(['forum-categories' => 'forum'])
+            ->except(['show', 'create', 'edit']);
+
+        Route::prefix('forum')->name('forum.')->group(function () {
+            Route::get('/', [AdminForumController::class, 'index'])->name('index');
+            Route::post('/thread/{thread}/pin', [AdminForumController::class, 'pin'])->name('pin');
+            Route::post('/thread/{thread}/lock', [AdminForumController::class, 'lock'])->name('lock');
+            Route::delete('/thread/{thread}', [AdminForumController::class, 'destroyThread'])->name('destroyThread');
+            Route::delete('/reply/{reply}', [AdminForumController::class, 'destroyReply'])->name('destroyReply');
+        });
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes (Shared with Kepala Sekolah)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'kepala_sekolah'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // Kelola Alumni (Read-Only)
+        // Didefinisikan SETELAH route statis admin_only untuk mencegah konflik wildcard
+        Route::prefix('alumni')->name('alumni.')->controller(AdminAlumni::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{alumni}', 'show')->name('show');
+        });
+
+        // Laporan & Tracer Study
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/angkatan/{angkatan}', [LaporanController::class, 'angkatan'])->name('laporan.angkatan');
+
+        // Activity Logs (Read-Only)
+        Route::prefix('logs')->name('logs.')->group(function () {
+            Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            Route::get('/{log}', [ActivityLogController::class, 'show'])->name('show');
+        });
+    });

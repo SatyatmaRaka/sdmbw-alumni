@@ -1,10 +1,12 @@
-const CACHE_NAME = 'sdmbw-alumni-cache-v1';
+const CACHE_NAME = 'sdmbw-alumni-cache-v2';
 const urlsToCache = [
   '/',
+  '/offline.html',
   '/site.webmanifest',
   '/favicon.ico',
   '/images/logo-sdmbw.png',
-  '/css/custom.css'
+  '/css/custom.css',
+  // Vite assets di-cache otomatis saat pertama diakses (Network-First strategy)
 ];
 
 // Install event
@@ -12,9 +14,16 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        return cache.addAll(urlsToCache);
+        // addAll akan gagal jika salah satu URL error; gunakan individual add untuk toleransi
+        return Promise.allSettled(
+          urlsToCache.map(url => cache.add(url).catch(() => {
+            console.warn('[SW] Failed to cache:', url);
+          }))
+        );
       })
   );
+  // Ambil alih segera tanpa menunggu tab lama ditutup
+  self.skipWaiting();
 });
 
 // Activate event (bersihkan cache lama)
@@ -24,11 +33,12 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -51,8 +61,18 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // Jika offline, ambil dari cache
-        return caches.match(event.request);
+        // Jika offline, coba ambil dari cache terlebih dahulu
+        return caches.match(event.request).then(cached => {
+          if (cached) return cached;
+
+          // Fallback ke offline.html untuk request navigasi (halaman HTML)
+          if (event.request.mode === 'navigate') {
+            return caches.match('/offline.html');
+          }
+
+          // Untuk asset lain yang tidak ter-cache, return empty response
+          return new Response('', { status: 503, statusText: 'Service Unavailable' });
+        });
       })
   );
 });

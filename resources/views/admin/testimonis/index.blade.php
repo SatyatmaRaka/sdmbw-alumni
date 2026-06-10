@@ -85,65 +85,6 @@
                         </td>
                     </tr>
 
-                    <!-- Edit Modal -->
-                    <div class="modal fade" id="modalEditTestimoni{{ $testimoni->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 shadow rounded-4">
-                                <div class="modal-header border-0 pb-0">
-                                    <h5 class="fw-bold mb-0">Edit Testimoni</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form action="{{ route('admin.testimonis.update', $testimoni) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Pilih Alumni</label>
-                                            <select name="alumni_id" class="form-select rounded-3" required>
-                                                @php $currentAngkatan = null; @endphp
-                                                @foreach($alumnis as $al)
-                                                    @php $groupName = $al->angkatan->nama_angkatan ?? 'Tanpa Angkatan'; @endphp
-                                                    @if($currentAngkatan !== $groupName)
-                                                        @if($currentAngkatan !== null) </optgroup> @endif
-                                                        @php $currentAngkatan = $groupName; @endphp
-                                                        <optgroup label="{{ $currentAngkatan }}">
-                                                    @endif
-                                                    <option value="{{ $al->id }}" {{ $al->id == $testimoni->alumni_id ? 'selected' : '' }}>
-                                                        {{ $al->nama_lengkap }}
-                                                    </option>
-                                                @endforeach
-                                                @if($currentAngkatan !== null) </optgroup> @endif
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold text-muted">Isi Testimoni</label>
-                                            <textarea name="content" class="form-control rounded-3" rows="4" required>{{ $testimoni->content }}</textarea>
-                                        </div>
-                                        <div class="row g-3">
-                                            <div class="col-6">
-                                                <label class="form-label small fw-bold text-muted d-block">Featured (Sorotan)</label>
-                                                <div class="form-check form-switch mt-2">
-                                                    <input class="form-check-input" type="checkbox" name="is_featured" value="1" {{ $testimoni->is_featured ? 'checked' : '' }}>
-                                                    <label class="form-check-label small">Jadikan Sorotan Utama</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
-                                                <div class="form-check form-switch mt-2">
-                                                    <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $testimoni->is_active ? 'checked' : '' }}>
-                                                    <label class="form-check-label small">Tampilkan di Web</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer border-0 pt-0">
-                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                     @empty
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
@@ -164,6 +105,68 @@
         </div>
     </div>
 </div>
+
+@foreach($testimonis as $testimoni)
+<!-- Edit Modal -->
+<div class="modal fade" id="modalEditTestimoni{{ $testimoni->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold mb-0">Edit Testimoni</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('admin.testimonis.update', $testimoni) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Pilih Alumni</label>
+                        <select name="alumni_id" class="form-select rounded-3" required>
+                            @php $currentAngkatan = null; @endphp
+                            @foreach($alumnis as $al)
+                                @php $groupName = $al->angkatan->nama_angkatan ?? 'Tanpa Angkatan'; @endphp
+                                @if($currentAngkatan !== $groupName)
+                                    @if($currentAngkatan !== null) </optgroup> @endif
+                                    @php $currentAngkatan = $groupName; @endphp
+                                    <optgroup label="{{ $currentAngkatan }}">
+                                @endif
+                                <option value="{{ $al->id }}" {{ $al->id == $testimoni->alumni_id ? 'selected' : '' }}>
+                                    {{ $al->nama_lengkap }}
+                                </option>
+                            @endforeach
+                            @if($currentAngkatan !== null) </optgroup> @endif
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Isi Testimoni</label>
+                        <textarea name="content" class="form-control rounded-3" rows="4" required>{{ $testimoni->content }}</textarea>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted d-block">Featured (Sorotan)</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_featured" value="1" {{ $testimoni->is_featured ? 'checked' : '' }}>
+                                <label class="form-check-label small">Jadikan Sorotan Utama</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted d-block">Status Aktif</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $testimoni->is_active ? 'checked' : '' }}>
+                                <label class="form-check-label small">Tampilkan di Web</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 <!-- Tambah Modal -->
 <div class="modal fade" id="modalTambahTestimoni" tabindex="-1">

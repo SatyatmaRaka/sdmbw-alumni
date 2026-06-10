@@ -12,11 +12,17 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Http\Controllers\Admin\LaporanController;
+use App\Services\CacheService;
 use Exception;
 
 class AlumniService
 {
+    private CacheService $cacheService;
+
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
     /**
      * Memperbarui informasi dasar Alumni.
      */
@@ -35,7 +41,7 @@ class AlumniService
             );
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
             
             return $alumni;
         } catch (Exception $e) {
@@ -76,7 +82,7 @@ class AlumniService
             AdminLog::log($adminId, $action, 'alumni', $alumni->id, $description);
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
 
             return match($status) {
                 AlumniStatus::VERIFIED->value => 'Alumni berhasil diverifikasi dan akun diaktifkan.',
@@ -100,7 +106,7 @@ class AlumniService
                 throw new Exception('Akun user tidak ditemukan.');
             }
 
-            $newPassword = Str::random(8);
+            $newPassword = Str::random(12);
 
             $alumni->user->update([
                 'password' => Hash::make($newPassword),
@@ -116,7 +122,7 @@ class AlumniService
             );
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
             
             return $newPassword;
         } catch (Exception $e) {
@@ -152,7 +158,7 @@ class AlumniService
             );
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
             
             return $alumni;
         } catch (Exception $e) {
@@ -190,7 +196,7 @@ class AlumniService
             );
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
@@ -220,28 +226,11 @@ class AlumniService
             );
 
             DB::commit();
-            $this->clearDashboardCache();
+            $this->cacheService->clearAllAlumniRelated();
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
     }
 
-    /**
-     * Membersihkan seluruh cache dashboard admin dan kepala sekolah.
-     */
-    public function clearDashboardCache(): void
-    {
-        Cache::forget('admin_dashboard_stats');
-        Cache::forget('admin_dashboard_recent_alumni');
-        Cache::forget('admin_dashboard_angkatan_stats');
-        Cache::forget('admin_dashboard_recent_updates');
-        
-        Cache::forget('kepala_sekolah_dashboard_stats');
-        Cache::forget('kepala_sekolah_angkatan_stats');
-        Cache::forget('kepala_sekolah_recent_alumni');
-        
-        LaporanController::clearLaporanCache();
-        Cache::forget('landing_stats');
-    }
 }

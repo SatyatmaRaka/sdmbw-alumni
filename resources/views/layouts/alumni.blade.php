@@ -596,27 +596,33 @@
 
     {{-- Sidebar Toggle --}}
     <script>
-        const btnToggle   = document.getElementById('btnToggle');
-        const sidebar     = document.getElementById('sidebar');
-        const overlay     = document.getElementById('sidebarOverlay');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
 
         function toggleSidebar() {
+            if (!sidebar || !overlay) return;
             sidebar.classList.toggle('show');
             overlay.classList.toggle('show');
             document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
         }
 
-        btnToggle?.addEventListener('click', toggleSidebar);
-        overlay?.addEventListener('click', toggleSidebar);
-
-        // Auto-close sidebar on nav link click (mobile)
-        if (window.innerWidth < 992) {
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (sidebar.classList.contains('show')) toggleSidebar();
-                });
-            });
-        }
+        // Use event delegation because Vue might replace the DOM element
+        document.addEventListener('click', function(e) {
+            // Check if toggle button or its children (like the icon) was clicked
+            if (e.target.closest('#btnToggle')) {
+                toggleSidebar();
+            }
+            // Check if overlay was clicked
+            else if (e.target === overlay) {
+                toggleSidebar();
+            }
+            // Auto-close sidebar on nav link click (mobile)
+            else if (window.innerWidth < 992 && e.target.closest('.sidebar .nav-link')) {
+                if (sidebar && sidebar.classList.contains('show')) {
+                    toggleSidebar();
+                }
+            }
+        });
     </script>
 
     {{-- Toast Notification --}}
@@ -687,5 +693,18 @@
     </script>
 
     @stack('scripts')
+
+    {{-- PWA Service Worker Registration --}}
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+    </script>
 </body>
 </html>

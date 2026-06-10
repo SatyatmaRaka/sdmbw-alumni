@@ -19,6 +19,27 @@ class UpdateProfileRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    /**
+     * Sanitize nested array inputs sebelum validasi dijalankan.
+     * ConvertEmptyStringsToNull middleware tidak menelusuri nested array,
+     * sehingga kita perlu membersihkannya secara manual.
+     */
+    protected function prepareForValidation(): void
+    {
+        $pendidikan = collect($this->input('pendidikan', []))->map(function ($edu) {
+            return array_map(fn($v) => ($v === '' ? null : $v), $edu);
+        })->toArray();
+
+        $pekerjaan = collect($this->input('pekerjaan', []))->map(function ($job) {
+            return array_map(fn($v) => ($v === '' ? null : $v), $job);
+        })->toArray();
+
+        $this->merge([
+            'pendidikan' => $pendidikan,
+            'pekerjaan'  => $pekerjaan,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -33,12 +54,12 @@ class UpdateProfileRequest extends FormRequest
             'pendidikan.*.nama_instansi'  => 'nullable|string|max:255',
             'pendidikan.*.fakultas'       => 'nullable|string|max:255',
             'pendidikan.*.program_studi'  => 'nullable|string|max:255',
-            'pendidikan.*.tahun_masuk'    => 'nullable|numeric|digits:4',
-            'pendidikan.*.tahun_lulus'    => 'nullable|numeric|digits:4',
+            'pendidikan.*.tahun_masuk'    => 'nullable|integer|digits:4',
+            'pendidikan.*.tahun_lulus'    => 'nullable|integer|digits:4',
             'pendidikan.*.is_ongoing'     => 'nullable|in:0,1',
             'pekerjaan.*.nama_perusahaan' => 'nullable|string|max:255',
             'pekerjaan.*.jabatan'         => 'nullable|string|max:255',
-            'pekerjaan.*.tahun_mulai'     => 'nullable|numeric|digits:4',
+            'pekerjaan.*.tahun_mulai'     => 'nullable|integer|digits:4',
             'pekerjaan.*.is_current'      => 'nullable|in:0,1',
             'username'                    => 'nullable|string|min:4|max:50|unique:users,username,' . auth()->id(),
             'password'                    => 'nullable|string|min:8|confirmed',
