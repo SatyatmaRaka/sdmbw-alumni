@@ -25,6 +25,7 @@ class CacheService
 
     // Landing Page Cache Keys
     public const LANDING_STATS = 'landing_stats';
+    public const LANDING_BERITAS = 'landing_beritas';
 
     /**
      * Clear admin and kepala sekolah dashboard caches.
@@ -58,6 +59,7 @@ class CacheService
     public function clearLandingCache(): void
     {
         Cache::forget(self::LANDING_STATS);
+        Cache::forget(self::LANDING_BERITAS);
     }
 
     /**

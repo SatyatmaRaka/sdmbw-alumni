@@ -8,10 +8,16 @@ use App\Models\AdminLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\Admin\LaporanController;
+use App\Services\CacheService;
 
 class AngkatanController extends Controller
 {
+    protected $cacheService;
+
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
     /**
      * Tampilkan daftar angkatan
      */
@@ -150,12 +156,6 @@ class AngkatanController extends Controller
      */
     private function clearCache(): void
     {
-        // Clear Dashboard Cache
-        Cache::forget('admin_dashboard_stats');
-        Cache::forget('admin_dashboard_angkatan_stats');
-        
-        // Clear Laporan & Landing Cache
-        LaporanController::clearLaporanCache();
-        Cache::forget('landing_stats');
+        $this->cacheService->clearAllAlumniRelated();
     }
 }

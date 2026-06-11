@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Berita;
+use App\Services\CacheService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class BeritaService
             $berita = Berita::create($data);
             DB::commit();
             
-            Cache::forget('landing_beritas');
+            Cache::forget(CacheService::LANDING_BERITAS);
             return $berita;
         } catch (Exception $e) {
             DB::rollBack();
@@ -67,7 +68,7 @@ class BeritaService
                 $this->deleteUploadedFile($oldImage);
             }
 
-            Cache::forget('landing_beritas');
+            Cache::forget(CacheService::LANDING_BERITAS);
             return $berita;
         } catch (Exception $e) {
             DB::rollBack();
@@ -92,7 +93,7 @@ class BeritaService
 
             // Menghapus gambar fisik setelah data berhasil dihapus dari database
             $this->deleteUploadedFile($imagePath);
-            Cache::forget('landing_beritas');
+            Cache::forget(CacheService::LANDING_BERITAS);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('BeritaService@deleteBerita failed: ' . $e->getMessage());
@@ -108,7 +109,7 @@ class BeritaService
         $berita->is_featured = !$berita->is_featured;
         $berita->save();
 
-        Cache::forget('landing_beritas');
+        Cache::forget(CacheService::LANDING_BERITAS);
 
         return $berita->is_featured;
     }

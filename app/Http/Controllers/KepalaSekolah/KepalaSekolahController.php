@@ -5,6 +5,7 @@ namespace App\Http\Controllers\KepalaSekolah;
 use App\Http\Controllers\Controller;
 use App\Models\Alumni;
 use App\Models\Angkatan;
+use App\Enums\AlumniStatus;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -21,7 +22,7 @@ class KepalaSekolahController extends Controller
         $stats = Cache::remember('kepala_sekolah_dashboard_stats', 300, function () {
             return [
                 'total_alumni'       => Alumni::count(),
-                'total_terverifikasi'=> Alumni::where('status_verifikasi', 'verified')->count(),
+                'total_terverifikasi'=> Alumni::where('status_verifikasi', AlumniStatus::VERIFIED->value)->count(),
                 'total_angkatan'     => Angkatan::whereIn('status', ['AKTIF', 'LULUS'])->count(),
                 'tracer_study'       => Alumni::select('jenjang_pendidikan_saat_ini', DB::raw('count(*) as total'))
                                             ->whereNotNull('jenjang_pendidikan_saat_ini')

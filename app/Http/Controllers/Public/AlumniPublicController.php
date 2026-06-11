@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Alumni;
 use App\Models\Angkatan;
+use App\Enums\AlumniStatus;
 use Illuminate\Http\Request;
 use DB;
 
@@ -19,7 +20,7 @@ class AlumniPublicController extends Controller
         // P1-2 FIX: Hanya tampilkan alumni yang belum ditolak (pending atau verified)
         // Alumni dengan status 'rejected' TIDAK ditampilkan di direktori publik.
         $query = Alumni::with(['fotos', 'angkatan'])
-            ->where('status_verifikasi', '!=', 'rejected');
+            ->where('status_verifikasi', '!=', AlumniStatus::REJECTED->value);
 
         // Search berdasarkan Nama atau NISN
         if ($request->filled('search')) {
