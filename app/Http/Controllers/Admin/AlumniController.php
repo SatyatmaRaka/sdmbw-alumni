@@ -250,10 +250,15 @@ class AlumniController extends Controller
 
             $successCount = $import->getSuccessCount();
             $failedCount  = $import->getFailedCount();
+            $fatalCount   = $import->getFatalCount();
 
             $message = "Import selesai: {$successCount} data alumni berhasil dimasukkan.";
             if ($failedCount > 0) {
                 $message .= " {$failedCount} baris dilewati (duplikat/tidak valid).";
+            }
+            if ($fatalCount > 0) {
+                $message .= " PERINGATAN: Ada {$fatalCount} batch yang batal diimport karena error database sistem. Silakan cek log.";
+                return redirect()->route('admin.alumni.index')->with('warning', $message);
             }
 
             return redirect()->route('admin.alumni.index')->with('success', $message);

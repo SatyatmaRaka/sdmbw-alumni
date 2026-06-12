@@ -13,10 +13,9 @@ use Maatwebsite\Excel\Events\AfterImport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 // TODO: Import file dalam jumlah besar sebaiknya dipanggil via dispatch() dari controller ke background job.
-class AlumniImport implements ToCollection, WithEvents, WithChunkReading, ShouldQueue
+class AlumniImport implements ToCollection, WithEvents, WithChunkReading
 {
     protected $adminId;
     protected $cacheKeySuccess;
@@ -25,6 +24,7 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
     // Counter untuk laporan setelah import selesai (sync mode)
     protected int $successCount = 0;
     protected int $failedCount = 0;
+    protected int $fatalCount = 0;
 
     // Optimasi: Cache data untuk menghindari N+1 queries
     protected $angkatans;
@@ -43,9 +43,9 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
             return strtolower($item->nama_angkatan);
         })->toArray();
         
-        // Kita hanya ambil NISN & Username untuk validasi duplikat cepat
-        $this->existingNisns = Alumni::pluck('nisn', 'nisn')->toArray();
-        $this->existingUsernames = User::pluck('username', 'username')->toArray();
+        // Inisialisasi array untuk cache per-chunk agar tidak memakan RAM berlebih saat alumni > 50.000
+        $this->existingNisns = [];
+        $this->existingUsernames = [];
     }
 
     public function collection(Collection $rows)
@@ -54,6 +54,28 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
         $localImportedCount = 0;
         $localFailedCount = 0;
         $dataStarted = false;
+
+        // OPTIMASI: Kumpulkan semua calon NISN dalam chunk ini
+        $nisnsInChunk = [];
+        foreach ($rows as $row) {
+            $nisn = trim($row[4] ?? '');
+            if (!empty($nisn)) {
+                $nisn = preg_replace('/\.0$/', '', $nisn);
+                if (str_contains(strtoupper($nisn), 'E+')) {
+                    $nisn = number_format((float)$nisn, 0, '', '');
+                }
+                $nisnsInChunk[] = $nisn;
+            }
+        }
+
+        // Fetch hanya NISN & Username yang berkaitan dengan chunk ini (mencegah memory limit pada data masif)
+        if (!empty($nisnsInChunk)) {
+            $fetchedNisns = Alumni::whereIn('nisn', $nisnsInChunk)->pluck('nisn', 'nisn')->toArray();
+            $this->existingNisns = array_merge($this->existingNisns, $fetchedNisns);
+
+            $fetchedUsernames = User::whereIn('username', $nisnsInChunk)->pluck('username', 'username')->toArray();
+            $this->existingUsernames = array_merge($this->existingUsernames, $fetchedUsernames);
+        }
 
         // BUNGKUS DALAM TRANSAKSI TUNGGAL PER CHUNK (SANGAT SIGNIFIKAN UNTUK KECEPATAN)
         DB::beginTransaction();
@@ -132,10 +154,21 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
                 $username = $nisn;
                 if (isset($this->existingUsernames[$username])) {
                     $counter = 1;
-                    while (isset($this->existingUsernames[$username . $counter])) {
-                        $counter++;
+                    while (true) {
+                        $testUsername = $nisn . $counter;
+                        if (isset($this->existingUsernames[$testUsername])) {
+                            $counter++;
+                            continue;
+                        }
+                        // Fallback query database jika bentrok (sangat jarang, sehingga mencegah N+1 query)
+                        if (User::where('username', $testUsername)->exists()) {
+                            $this->existingUsernames[$testUsername] = $testUsername;
+                            $counter++;
+                            continue;
+                        }
+                        $username = $testUsername;
+                        break;
                     }
-                    $username = $nisn . $counter;
                 }
 
                 $user = User::create([
@@ -169,7 +202,7 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Import Chunk Error: " . $e->getMessage());
-            // Kita anggap chunk ini gagal, namun chunk lain tetap bisa jalan jika dipanggil terpisah
+            $this->fatalCount++;
         }
 
         // Akumulasi ke Cache
@@ -209,6 +242,14 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
         return $this->failedCount;
     }
 
+    /**
+     * Mengembalikan jumlah chunk yang dibatalkan karena fatal error (misal: struktur tabel tidak valid).
+     */
+    public function getFatalCount(): int
+    {
+        return $this->fatalCount;
+    }
+
     public function registerEvents(): array
     {
         return [
@@ -221,7 +262,7 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading, Should
                     'import_alumni',
                     'alumni',
                     null,
-                    "Import data alumni selesai (Optimized). Sukses: $success, Gagal/Skip: $failed."
+                    "Import data alumni selesai (Optimized). Sukses: $success, Gagal/Skip: $failed, Fatal Chunk: {$this->fatalCount}."
                 );
             },
         ];
