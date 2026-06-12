@@ -6,78 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Alumni;
 use App\Models\Angkatan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Services\CacheService;
+use App\Services\LaporanService;
 use App\Enums\AlumniStatus;
 
 class LaporanController extends Controller
 {
-    private CacheService $cacheService;
+    private LaporanService $laporanService;
 
-    public function __construct(CacheService $cacheService)
+    public function __construct(LaporanService $laporanService)
     {
-        $this->cacheService = $cacheService;
+        $this->laporanService = $laporanService;
     }
+
     /**
      * Tampilkan halaman laporan utama
      */
     public function index(Request $request)
     {
-        // 1. Statistik Umum — di-cache 10 menit
-        $stats = Cache::remember(CacheService::LAPORAN_GENERAL_STATS, 600, function () {
-            return [
-                'total_alumni'         => Alumni::count(),
-                'alumni_verified'      => Alumni::where('status_verifikasi', AlumniStatus::VERIFIED->value)->count(),
-                'alumni_pending'       => Alumni::where('status_verifikasi', AlumniStatus::PENDING->value)->count(),
-                'alumni_rejected'      => Alumni::where('status_verifikasi', AlumniStatus::REJECTED->value)->count(),
-                'profil_lengkap'       => Alumni::where('is_profile_complete', true)->count(),
-                'profil_belum_lengkap' => Alumni::where('is_profile_complete', false)->count(),
-            ];
-        });
-
-        // 2. Statistik per Angkatan — di-cache 10 menit
-        $angkatanStats = Cache::remember(CacheService::LAPORAN_ANGKATAN_STATS, 600, function () {
-            return Angkatan::withCount([
-                'alumni',
-                'alumni as verified_count' => function ($query) {
-                    $query->where('status_verifikasi', AlumniStatus::VERIFIED->value);
-                },
-                'alumni as pending_count' => function ($query) {
-                    $query->where('status_verifikasi', AlumniStatus::PENDING->value);
-                },
-                'alumni as complete_count' => function ($query) {
-                    $query->where('is_profile_complete', true);
-                }
-            ])
-            ->orderBy('id', 'asc')
-            ->get();
-        });
-
-        // 3. Alumni berdasarkan Instansi Pendidikan Terpopuler — di-cache 10 menit
-        $pendidikanStats = Cache::remember(CacheService::LAPORAN_PENDIDIKAN_STATS, 600, function () {
-            return DB::table('alumni_pendidikan')
-                ->select('nama_instansi as pendidikan_lanjutan', DB::raw('count(*) as total'))
-                ->whereNotNull('nama_instansi')
-                ->where('nama_instansi', '!=', '')
-                ->groupBy('nama_instansi')
-                ->orderBy('total', 'desc')
-                ->take(10)
-                ->get();
-        });
-
-        // 4. Alumni berdasarkan Perusahaan/Pekerjaan Terpopuler — di-cache 10 menit
-        $pekerjaanStats = Cache::remember(CacheService::LAPORAN_PEKERJAAN_STATS, 600, function () {
-            return DB::table('alumni_pekerjaan')
-                ->select('nama_perusahaan as pekerjaan', DB::raw('count(*) as total'))
-                ->whereNotNull('nama_perusahaan')
-                ->where('nama_perusahaan', '!=', '')
-                ->groupBy('nama_perusahaan')
-                ->orderBy('total', 'desc')
-                ->take(10)
-                ->get();
-        });
+        $stats = $this->laporanService->getGeneralStats();
+        $angkatanStats = $this->laporanService->getAngkatanStats();
+        $pendidikanStats = $this->laporanService->getPendidikanStats();
+        $pekerjaanStats = $this->laporanService->getPekerjaanStats();
 
         return view('admin.laporan.index', compact(
             'stats',
@@ -92,30 +42,11 @@ class LaporanController extends Controller
      */
     public function angkatan(Request $request, Angkatan $angkatan)
     {
-        $alumniQuery = Alumni::with(['user', 'pendidikan', 'pekerjaan'])
-            ->where('angkatan_id', $angkatan->id);
-
-        // Filter status jika ada
-        if ($request->filled('status')) {
-            $alumniQuery->where('status_verifikasi', $request->status);
-        }
-
+        $alumniQuery = $this->laporanService->getLaporanAlumniQuery($angkatan, $request->status);
         $alumni = $alumniQuery->orderBy('nama_lengkap')->get();
 
         // Format alumni dengan data pendidikan & pekerjaan yang readable
-        $alumniFormatted = $alumni->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'nisn' => $item->nisn,
-                'nama_lengkap' => $item->nama_lengkap,
-                'username' => $item->user->username ?? '-',
-                'no_hp' => $item->no_hp ?? '-',
-                'pendidikan_terakhir' => $this->formatPendidikan($item->pendidikan),
-                'pekerjaan_terkini' => $this->formatPekerjaan($item->pekerjaan),
-                'status_verifikasi' => $item->status_verifikasi,
-                'is_profile_complete' => $item->is_profile_complete,
-            ];
-        });
+        $alumniFormatted = $this->laporanService->formatAlumniLaporan($alumni);
 
         // Statistik angkatan
         $stats = [
@@ -131,62 +62,6 @@ class LaporanController extends Controller
     }
 
     /**
-     * Format pendidikan menjadi readable string
-     */
-    private function formatPendidikan($pendidikanCollection)
-    {
-        if ($pendidikanCollection->isEmpty()) {
-            return '-';
-        }
-
-        // Ambil pendidikan terakhir (dengan tahun lulus paling baru atau tahun masuk terbaru)
-        $pendidikan = $pendidikanCollection->sortByDesc('tahun_lulus')->first();
-
-        if (!$pendidikan) {
-            return '-';
-        }
-
-        $text = $pendidikan->jenjang;
-        if ($pendidikan->nama_instansi) {
-            $text .= ' - ' . $pendidikan->nama_instansi;
-        }
-        if ($pendidikan->program_studi && $pendidikan->jenjang === 'Perguruan Tinggi') {
-            $text .= ' (' . $pendidikan->program_studi . ')';
-        }
-
-        return $text;
-    }
-
-    /**
-     * Format pekerjaan menjadi readable string
-     */
-    private function formatPekerjaan($pekerjaanCollection)
-    {
-        if ($pekerjaanCollection->isEmpty()) {
-            return '-';
-        }
-
-        // Ambil pekerjaan terkini (is_current = true)
-        $pekerjaan = $pekerjaanCollection->where('is_current', true)->first();
-
-        // Jika tidak ada is_current, ambil pekerjaan terakhir
-        if (!$pekerjaan) {
-            $pekerjaan = $pekerjaanCollection->last();
-        }
-
-        if (!$pekerjaan) {
-            return '-';
-        }
-
-        $text = $pekerjaan->jabatan;
-        if ($pekerjaan->nama_perusahaan) {
-            $text .= ' di ' . $pekerjaan->nama_perusahaan;
-        }
-
-        return $text;
-    }
-
-    /**
      * Export laporan alumni ke PDF
      */
     public function exportPdf(Request $request)
@@ -196,35 +71,14 @@ class LaporanController extends Controller
             $angkatan = Angkatan::find($request->angkatan_id);
         }
 
-        // Bangun query dengan filter yang sama seperti halaman detail angkatan
-        $alumniQuery = Alumni::with(['angkatan', 'pendidikan', 'pekerjaan'])
-            ->select('alumni.*');
-
-        // Filter angkatan
-        if ($angkatan) {
-            $alumniQuery->where('angkatan_id', $angkatan->id);
-        }
-
-        // Filter status verifikasi
-        if ($request->filled('status')) {
-            $alumniQuery->where('status_verifikasi', $request->status);
-        }
-
-        // Ambil dan format data
+        $alumniQuery = $this->laporanService->getLaporanAlumniQuery($angkatan, $request->status);
+        
+        // Eager load angkatan for PDF
+        $alumniQuery->with('angkatan');
+        
         $alumniRaw = $alumniQuery->orderBy('angkatan_id', 'asc')->orderBy('nama_lengkap', 'asc')->get();
 
-        $alumni = $alumniRaw->map(function ($item) {
-            return [
-                'nisn'               => $item->nisn ?? '-',
-                'nama_lengkap'       => $item->nama_lengkap,
-                'angkatan'           => $item->angkatan->nama_angkatan ?? '-',
-                'pekerjaan_terkini'  => $this->formatPekerjaan($item->pekerjaan),
-                'pendidikan_terakhir'=> $this->formatPendidikan($item->pendidikan),
-                'alamat'             => $item->alamat ?? '-',
-                'no_hp'              => ($item->no_hp && $item->show_no_hp) ? $item->no_hp : '-',
-                'status_verifikasi'  => $item->status_verifikasi ?? '-',
-            ];
-        });
+        $alumni = $this->laporanService->formatAlumniLaporan($alumniRaw);
 
         $data = [
             'alumni'         => $alumni,
@@ -243,5 +97,4 @@ class LaporanController extends Controller
 
         return $pdf->download($filename);
     }
-
 }

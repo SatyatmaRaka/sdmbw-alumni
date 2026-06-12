@@ -442,6 +442,12 @@
                         class="{{ request()->routeIs('admin.alumni.*') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i>
                         <span>Kelola Alumni</span>
+                        @php
+                            $pendingAlumniCount = \App\Models\Alumni::where('status_verifikasi', \App\Enums\AlumniStatus::PENDING->value)->count();
+                        @endphp
+                        @if($pendingAlumniCount > 0)
+                            <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingAlumniCount }}</span>
+                        @endif
                     </a>
                 </li>
                 @if(auth()->user()->isAdmin())

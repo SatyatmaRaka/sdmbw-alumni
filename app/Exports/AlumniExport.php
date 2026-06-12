@@ -3,13 +3,13 @@
 namespace App\Exports;
 
 use App\Models\Alumni;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class AlumniExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
     protected $filters;
 
@@ -27,7 +27,7 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
     /**
      * Query dengan filter
      */
-    public function collection()
+    public function query()
     {
         $query = Alumni::with(['angkatan', 'pendidikan', 'pekerjaan']);
 
@@ -46,7 +46,7 @@ class AlumniExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $query->where('is_profile_complete', (int)$this->filters['complete']);
         }
 
-        return $query->orderBy('nama_lengkap')->get();
+        return $query->orderBy('nama_lengkap');
     }
 
     /**

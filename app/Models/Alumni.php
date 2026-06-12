@@ -188,7 +188,16 @@ class Alumni extends Model
         }
 
         // 2. Minimal harus ada 1 riwayat pendidikan (biasanya SD)
-        if ($this->pendidikan()->count() === 0) {
+        // Gunakan eager loaded collection atau count attribute untuk menghindari N+1 query
+        if ($this->relationLoaded('pendidikan')) {
+            $pendidikanCount = $this->pendidikan->count();
+        } elseif ($this->pendidikan_count !== null) {
+            $pendidikanCount = $this->pendidikan_count;
+        } else {
+            $pendidikanCount = $this->pendidikan()->count();
+        }
+
+        if ($pendidikanCount === 0) {
             return false;
         }
 

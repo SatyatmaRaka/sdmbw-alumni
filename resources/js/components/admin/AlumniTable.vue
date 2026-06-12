@@ -117,7 +117,12 @@
                 <span v-else class="text-muted">-</span>
               </td>
               <td class="py-3">
-                <div class="small mb-1"><i class="bi bi-whatsapp text-success me-1"></i> {{ row.no_hp || '-' }}</div>
+                <div class="small mb-1">
+                  <a v-if="row.no_hp" :href="'https://wa.me/' + row.no_hp.replace(/[^0-9]/g, '').replace(/^0/, '62')" target="_blank" class="text-decoration-none text-success fw-bold d-inline-flex align-items-center" title="Chat via WhatsApp">
+                    <i class="bi bi-whatsapp me-1"></i> {{ row.no_hp }}
+                  </a>
+                  <span v-else class="text-muted"><i class="bi bi-whatsapp me-1"></i> -</span>
+                </div>
                 <div class="small text-muted text-truncate" style="max-width: 150px;">
                   <i class="bi bi-envelope me-1"></i> {{ row.email || row.user?.email || '-' }}
                 </div>
