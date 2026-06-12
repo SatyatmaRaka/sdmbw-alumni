@@ -7,9 +7,16 @@ use App\Models\Angkatan;
 use App\Models\Alumni;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
+use App\Services\CacheService;
 
 class DashboardController extends Controller
 {
+    private CacheService $cacheService;
+
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
     /**
      * Tampilkan dashboard admin dengan statistik lengkap
      * Cache digunakan untuk mengurangi beban query database (TTL: 5 menit)
@@ -19,7 +26,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         // 1. Statistik Utama — di-cache 5 menit
-        $stats = Cache::remember('admin_dashboard_stats', 300, function () {
+        $stats = Cache::remember(CacheService::ADMIN_DASHBOARD_STATS, 300, function () {
             return [
                 'total_alumni'         => Alumni::count(),
                 'total_angkatan'       => Angkatan::whereIn('status', ['AKTIF', 'LULUS'])->count(),
@@ -36,7 +43,7 @@ class DashboardController extends Controller
         });
 
         // 2. Alumni terbaru dengan eager loading — di-cache 5 menit
-        $recentAlumni = Cache::remember('admin_dashboard_recent_alumni', 300, function () {
+        $recentAlumni = Cache::remember(CacheService::ADMIN_DASHBOARD_RECENT_ALUMNI, 300, function () {
             return Alumni::with(['user', 'angkatan'])
                 ->latest()
                 ->take(5)
@@ -44,7 +51,7 @@ class DashboardController extends Controller
         });
 
         // 3. Statistik per angkatan — di-cache 10 menit (jarang berubah)
-        $angkatanStats = Cache::remember('admin_dashboard_angkatan_stats', 600, function () {
+        $angkatanStats = Cache::remember(CacheService::ADMIN_DASHBOARD_ANGKATAN_STATS, 600, function () {
             return Angkatan::whereIn('status', ['AKTIF', 'LULUS'])
                 ->withCount('alumni')
                 ->orderBy('id', 'asc')
@@ -52,7 +59,7 @@ class DashboardController extends Controller
         });
 
         // 4. Alumni dengan profil lengkap (update terkini) — di-cache 5 menit
-        $recentUpdates = Cache::remember('admin_dashboard_recent_updates', 300, function () {
+        $recentUpdates = Cache::remember(CacheService::ADMIN_DASHBOARD_RECENT_UPDATES, 300, function () {
             return Alumni::with(['user', 'angkatan'])
                 ->where('is_profile_complete', true)
                 ->latest('updated_at')

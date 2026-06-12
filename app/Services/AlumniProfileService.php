@@ -44,7 +44,8 @@ class AlumniProfileService
                 // First-time onboarding: bebaskan dari wajib ganti password
                 $userUpdateData['must_change_password'] = false;
             }
-            if (!empty($data['email'])) {
+            // Synchronize email to users table as well if it was provided in the update payload
+            if (array_key_exists('email', $data)) {
                 $userUpdateData['email'] = $data['email'];
             }
             if (!empty($data['username']) && $data['username'] !== $user->username) {

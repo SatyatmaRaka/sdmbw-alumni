@@ -190,14 +190,15 @@ class AlumniServiceTest extends TestCase
     // RESET PASSWORD TESTS (4 tests)
     // ==========================================
 
-    public function test_reset_password_generates_12_character_password(): void
+    public function test_reset_password_changes_password_and_returns_success_message(): void
     {
         $alumni = $this->createAlumni();
+        $oldPasswordHash = $alumni->fresh()->user->password;
         
-        $password = $this->alumniService->resetPassword($alumni, $this->admin->id);
+        $result = $this->alumniService->resetPassword($alumni, $this->admin->id);
 
-        $this->assertEquals(12, strlen($password));
-        $this->assertTrue(Hash::check($password, $alumni->fresh()->user->password));
+        $this->assertEquals('Password berhasil direset.', $result);
+        $this->assertNotEquals($oldPasswordHash, $alumni->fresh()->user->password);
     }
 
     public function test_reset_password_marks_must_change_password_flag(): void
@@ -270,10 +271,24 @@ class AlumniServiceTest extends TestCase
         $alumni = $this->createAlumni();
         $userId = $alumni->user_id;
 
+        // Populate relations
+        \App\Models\AlumniPendidikan::create([
+            'alumni_id' => $alumni->id,
+            'jenjang' => 'S1',
+            'nama_instansi' => 'Test Univ'
+        ]);
+        \App\Models\AlumniPekerjaan::create([
+            'alumni_id' => $alumni->id,
+            'peran' => 'Staff',
+            'nama_perusahaan' => 'Test Corp'
+        ]);
+
         $this->alumniService->deleteAlumni($alumni, $this->admin->id);
 
         $this->assertDatabaseMissing('alumni', ['id' => $alumni->id]);
         $this->assertDatabaseMissing('users', ['id' => $userId]);
+        $this->assertDatabaseMissing('alumni_pendidikan', ['alumni_id' => $alumni->id]);
+        $this->assertDatabaseMissing('alumni_pekerjaan', ['alumni_id' => $alumni->id]);
         $this->assertDatabaseHas('admin_logs', [
             'admin_id' => $this->admin->id,
             'action' => AdminLog::ACTION_DELETE_ALUMNI,

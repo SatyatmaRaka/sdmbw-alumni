@@ -168,6 +168,23 @@ class Alumni extends Model
 
     /*
     |--------------------------------------------------------------------------
+    | Accessors & Mutators
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Fallback ke email user login jika email kontak kosong
+     *
+     * @param string|null $value
+     * @return string|null
+     */
+    public function getEmailAttribute($value): ?string
+    {
+        return $value ?: $this->user?->email;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Helper Methods
     |--------------------------------------------------------------------------
     */

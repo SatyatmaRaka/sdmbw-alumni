@@ -13,13 +13,19 @@ use Maatwebsite\Excel\Events\AfterImport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class AlumniImport implements ToCollection, WithEvents, WithChunkReading
+// TODO: Import file dalam jumlah besar sebaiknya dipanggil via dispatch() dari controller ke background job.
+class AlumniImport implements ToCollection, WithEvents, WithChunkReading, ShouldQueue
 {
     protected $adminId;
     protected $cacheKeySuccess;
     protected $cacheKeyFailed;
-    
+
+    // Counter untuk laporan setelah import selesai (sync mode)
+    protected int $successCount = 0;
+    protected int $failedCount = 0;
+
     // Optimasi: Cache data untuk menghindari N+1 queries
     protected $angkatans;
     protected $existingNisns;
@@ -40,18 +46,10 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading
         // Kita hanya ambil NISN & Username untuk validasi duplikat cepat
         $this->existingNisns = Alumni::pluck('nisn', 'nisn')->toArray();
         $this->existingUsernames = User::pluck('username', 'username')->toArray();
-
-        // Mencegah timeout eksekusi saat import berjalan sinkron
-        set_time_limit(0); 
-        
-        // Melepas kunci sesi (session lock) agar tab/halaman lain tidak stuck saat proses ini berjalan
-        session_write_close();
     }
 
     public function collection(Collection $rows)
-    {
-        // Pastikan time limit tetap tidak terbatas pada setiap chunk
-        set_time_limit(0); 
+    { 
 
         $localImportedCount = 0;
         $localFailedCount = 0;
@@ -93,11 +91,13 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading
                 // Validasi NISN & Duplikat (O(1) lookup via array key)
                 if (empty($nisn) || !preg_match('/^[0-9]{10}$/', $nisn)) {
                     $localFailedCount++;
+                    $this->failedCount++;
                     continue;
                 }
 
                 if (isset($this->existingNisns[$nisn])) {
                     $localFailedCount++;
+                    $this->failedCount++;
                     continue;
                 }
 
@@ -163,6 +163,7 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading
                 $this->existingUsernames[$username] = $username;
                 
                 $localImportedCount++;
+                $this->successCount++; // Increment instance counter
             }
             DB::commit();
         } catch (\Exception $e) {
@@ -188,6 +189,24 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading
         if (in_array($jkInput, ['L', 'LAKI-LAKI', 'LAKI LAKI', 'PRIA', 'MALE'])) return 'L';
         if (in_array($jkInput, ['P', 'PEREMPUAN', 'WANITA', 'FEMALE'])) return 'P';
         return null;
+    }
+
+    /**
+     * Mengembalikan jumlah baris yang berhasil diimport.
+     * Digunakan oleh controller untuk menampilkan feedback ke user.
+     */
+    public function getSuccessCount(): int
+    {
+        return $this->successCount;
+    }
+
+    /**
+     * Mengembalikan jumlah baris yang gagal/dilewati saat import.
+     * Digunakan oleh controller untuk menampilkan feedback ke user.
+     */
+    public function getFailedCount(): int
+    {
+        return $this->failedCount;
     }
 
     public function registerEvents(): array

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Alumni;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Services\AlumniProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
+    private AlumniProfileService $profileService;
+
+    public function __construct(AlumniProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     public function edit(): View|RedirectResponse
     {
         /** @var User $user */
@@ -53,8 +61,7 @@ class ProfileController extends Controller
 
         try {
             // Delegasi ke Service Layer
-            $profileService = new \App\Services\AlumniProfileService();
-            $profileService->updateProfile(
+            $this->profileService->updateProfile(
                 $user,
                 $alumni,
                 $request->all(),

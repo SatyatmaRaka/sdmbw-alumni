@@ -117,9 +117,9 @@ class AlumniController extends Controller
     public function resetPassword(Alumni $alumni)
     {
         try {
-            $newPassword = $this->alumniService->resetPassword($alumni, Auth::id());
-            session()->flash('new_password', $newPassword);
-            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset. Silakan salin password baru di atas.");
+            $this->alumniService->resetPassword($alumni, Auth::id());
+            // TODO: Integrasi mail - kirim notifikasi password baru dikirim via email
+            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset.");
         } catch (Exception $e) {
             return back()->with('error', 'Gagal reset password: ' . $e->getMessage());
         }
@@ -152,7 +152,7 @@ class AlumniController extends Controller
 
         try {
             $alumni = $this->alumniService->resetPasswordByNisn($request->nisn, $request->password, Auth::id());
-            session()->flash('new_password', $request->password);
+            // TODO: Integrasi mail - kirim notifikasi password baru dikirim via email
             return redirect()->route('admin.alumni.resetPasswordForm')
                 ->with('success', "Password alumni NISN {$request->nisn} ({$alumni->nama_lengkap}) berhasil direset!");
         } catch (Exception $e) {
@@ -226,28 +226,45 @@ class AlumniController extends Controller
      */
     public function import(Request $request)
     {
+        // Queue connection harus SYNC di shared hosting cPanel
+        // Set QUEUE_CONNECTION=sync di .env production
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // max 5MB
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048', // max 2MB untuk shared hosting
         ], [
             'file.required' => 'File Excel wajib diunggah',
-            'file.mimes' => 'Format file harus berupa Excel (.xlsx, .xls) atau CSV',
-            'file.max' => 'Ukuran file maksimal 5MB',
+            'file.mimes'    => 'Format file harus berupa Excel (.xlsx, .xls) atau CSV',
+            'file.max'      => 'Ukuran file maksimal 2MB (batas shared hosting)',
         ]);
+
+        // Beri batas waktu 2 menit — aman karena ada limit, berbeda dengan set_time_limit(0)
+        set_time_limit(120);
 
         $filePath = null;
         try {
             $filePath = $request->file('file')->store('imports');
-            
+
             $import = new \App\Imports\AlumniImport(Auth::id());
             \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
 
             $this->cacheService->clearAllAlumniRelated();
-            
-            return redirect()->route('admin.alumni.index')
-                ->with('success', 'Data alumni berhasil di-import! Silakan cek daftar di bawah.');
+
+            $successCount = $import->getSuccessCount();
+            $failedCount  = $import->getFailedCount();
+
+            $message = "Import selesai: {$successCount} data alumni berhasil dimasukkan.";
+            if ($failedCount > 0) {
+                $message .= " {$failedCount} baris dilewati (duplikat/tidak valid).";
+            }
+
+            return redirect()->route('admin.alumni.index')->with('success', $message);
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = collect($e->failures())->map(fn($f) => "Baris {$f->row()}: " . implode(', ', $f->errors()))->implode(' | ');
+            \Illuminate\Support\Facades\Log::warning('Import validation errors: ' . $failures);
+            return back()->with('error', 'Terdapat kesalahan validasi pada file: ' . $failures);
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('Import initiation failed: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memulai proses import. Silakan coba lagi atau hubungi administrator.');
+            return back()->with('error', 'Gagal memulai proses import: ' . $e->getMessage());
         } finally {
             if ($filePath && \Illuminate\Support\Facades\Storage::exists($filePath)) {
                 \Illuminate\Support\Facades\Storage::delete($filePath);

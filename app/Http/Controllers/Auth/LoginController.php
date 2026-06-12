@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
@@ -63,7 +64,7 @@ class LoginController extends Controller
             // Update waktu login terakhir
             $user->update(['last_login_at' => now()]);
 
-            if ($user->role === 'admin') {
+            if ($user->isAdmin()) {
                 \App\Models\AdminLog::log(
                     $user->id,
                     'admin_login',
@@ -109,22 +110,23 @@ class LoginController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return redirect()->route('admin.dashboard');
         }
 
-        if ($user->role === 'kepala_sekolah') {
+        if ($user->isKepalaSekolah()) {
             return redirect()->route('kepala_sekolah.dashboard');
         }
 
-        if ($user->role === 'alumni') {
+        if ($user->isAlumni()) {
             return redirect()->route('alumni.dashboard');
         }
 
+        // Default case jika role tidak dikenali
         Auth::logout();
 
         return redirect()->route('login')->withErrors([
-            'username' => 'Role akun tidak valid.',
+            'username' => 'Role akun tidak dikenali. Silakan hubungi administrator.',
         ]);
     }
 }

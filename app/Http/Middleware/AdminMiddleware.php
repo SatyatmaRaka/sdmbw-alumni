@@ -7,6 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * AdminMiddleware — Production-Ready.
+ *
+ * Middleware ini sudah siap digunakan di lingkungan production cPanel.
+ * Melakukan 3 pengecekan secara berurutan:
+ *   1. Pastikan user sudah login (Auth::check()).
+ *   2. Pastikan akun user masih aktif (is_active = true).
+ *   3. Pastikan role user adalah ADMIN sesuai enum UserRole::ADMIN.
+ *
+ * Jika salah satu cek gagal, pengguna akan diarahkan ke halaman login
+ * atau mendapat respons 403 Forbidden.
+ */
 class AdminMiddleware
 {
     /**

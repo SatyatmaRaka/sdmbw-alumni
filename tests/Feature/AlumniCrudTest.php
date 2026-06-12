@@ -192,7 +192,6 @@ class AlumniCrudTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        $this->assertTrue(session()->has('new_password'));
     }
 
     // -------------------------------------------------------------------------

@@ -17,10 +17,10 @@ class AlumniPublicController extends Controller
      */
     public function direktori(Request $request)
     {
-        // P1-2 FIX: Hanya tampilkan alumni yang belum ditolak (pending atau verified)
-        // Alumni dengan status 'rejected' TIDAK ditampilkan di direktori publik.
+        // Hanya tampilkan alumni yang sudah diverifikasi (verified)
+        // Alumni dengan status 'pending' atau 'rejected' TIDAK ditampilkan di direktori publik.
         $query = Alumni::with(['fotos', 'angkatan'])
-            ->where('status_verifikasi', '!=', AlumniStatus::REJECTED->value);
+            ->where('status_verifikasi', AlumniStatus::VERIFIED->value);
 
         // Search berdasarkan Nama atau NISN
         if ($request->filled('search')) {
@@ -61,6 +61,10 @@ class AlumniPublicController extends Controller
      */
     public function show(Alumni $alumni)
     {
+        if ($alumni->status_verifikasi !== AlumniStatus::VERIFIED->value) {
+            abort(404);
+        }
+
         // Load semua relasi yang diperlukan
         $alumni->load(['fotos', 'angkatan', 'pendidikan', 'pekerjaan']);
 

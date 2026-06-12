@@ -124,7 +124,8 @@ class AlumniService
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
             
-            return $newPassword;
+            // TODO: Integrasi mail - kirim notifikasi berisi password baru via email
+            return 'Password berhasil direset.';
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
