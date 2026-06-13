@@ -50,7 +50,7 @@ class UserController extends Controller
         $user = User::create([
             'username'  => $request->username,
             'role'      => $request->role,
-            'password'  => Hash::make($request->password),
+            'password'  => $request->password,
             'is_active' => true,
         ]);
 
@@ -102,7 +102,7 @@ class UserController extends Controller
         }
 
         if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
+            $user->password = $request->password;
         }
 
         $user->save();

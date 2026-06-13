@@ -53,6 +53,13 @@ class LoginController extends Controller
             ])->onlyInput('username');
         }
 
+        // Cek apakah akun aktif sebelum attempt
+        if (!$user->is_active) {
+            return back()->withErrors([
+                'username' => 'Akun Anda telah dinonaktifkan atau belum diverifikasi oleh administrator.',
+            ])->onlyInput('username');
+        }
+
         // Proses login
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             /** @var \App\Models\User $user */
