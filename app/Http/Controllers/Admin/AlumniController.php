@@ -85,9 +85,18 @@ class AlumniController extends Controller
     {
         try {
             $this->alumniService->updateAlumni($alumni, $request->validated(), Auth::id());
+            
+            if ($request->wantsJson()) {
+                session()->flash('success', 'Data alumni berhasil diperbarui!');
+                return response()->json(['success' => true]);
+            }
+
             return redirect()->route('admin.alumni.show', $alumni)
                 ->with('success', 'Data alumni berhasil diperbarui!');
         } catch (Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            }
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
@@ -117,8 +126,8 @@ class AlumniController extends Controller
     public function resetPassword(Alumni $alumni)
     {
         try {
-            $this->alumniService->resetPassword($alumni, Auth::id());
-            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset.");
+            $newPassword = $this->alumniService->resetPassword($alumni, Auth::id());
+            return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset. Password baru: {$newPassword}");
         } catch (Exception $e) {
             return back()->with('error', 'Gagal reset password: ' . $e->getMessage());
         }

@@ -130,7 +130,7 @@ class AlumniService
                 Mail::to($alumni->email)->send(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
             }
 
-            return 'Password berhasil direset.';
+            return $newPassword;
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
