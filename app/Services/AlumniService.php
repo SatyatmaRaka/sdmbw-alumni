@@ -127,11 +127,7 @@ class AlumniService
             $this->cacheService->clearAllAlumniRelated();
             
             if ($alumni->email) {
-                try {
-                    Mail::to($alumni->email)->send(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
-                }
+                Mail::to($alumni->email)->queue(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
             }
 
             return $newPassword;
@@ -171,7 +167,7 @@ class AlumniService
             $this->cacheService->clearAllAlumniRelated();
             
             if ($alumni->email) {
-                Mail::to($alumni->email)->send(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
+                Mail::to($alumni->email)->queue(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
             }
             
             return $alumni;
