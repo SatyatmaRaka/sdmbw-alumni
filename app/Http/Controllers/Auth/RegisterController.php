@@ -18,7 +18,7 @@ class RegisterController extends Controller
      */
     public function showRegistrationForm()
     {
-        $angkatans = Angkatan::orderBy('tahun_ajaran', 'desc')->get();
+        $angkatans = Angkatan::orderBy('tahun_ajaran', 'asc')->get();
         return view('auth.register', compact('angkatans'));
     }
 
