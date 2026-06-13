@@ -52,8 +52,9 @@
     <div id="app" class="w-100 d-flex justify-content-center">
         <login-form 
             action-url="{{ route('login') }}" 
+            register-url="{{ route('register') }}"
             csrf-token="{{ csrf_token() }}"
-            initial-error="{{ $errors->first('username') ?: session('error') }}">
+            initial-error="{{ $errors->first('username') ?: session('error') ?: session('success') }}">
         </login-form>
     </div>
 

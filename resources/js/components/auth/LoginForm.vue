@@ -67,8 +67,8 @@
             <a :href="waUrl('Halo Admin, saya ingin konsultasi mengenai portal alumni SDMBW. Mohon bantuannya 🙏')" target="_blank" class="text-success small fw-bold text-decoration-none d-inline-flex align-items-center gap-2 link-hover-move">
               <i class="bi bi-whatsapp fs-5"></i> 💬 Mau Konsultasi
             </a>
-            <a :href="waUrl('Halo Admin, saya ingin mendaftar sebagai alumni SDMBW di portal ini. Mohon bantuannya 🙏')" target="_blank" class="text-success small fw-bold text-decoration-none d-inline-flex align-items-center gap-2 link-hover-move">
-              <i class="bi bi-whatsapp fs-5"></i> 📋 Belum Punya Akun
+            <a :href="registerUrl" class="text-success small fw-bold text-decoration-none d-inline-flex align-items-center gap-2 link-hover-move">
+              <i class="bi bi-person-plus-fill fs-5"></i> 📋 Belum Punya Akun? Daftar
             </a>
           </div>
         </div>
