@@ -126,10 +126,6 @@ class AlumniService
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
             
-            if ($alumni->email) {
-                Mail::to($alumni->email)->queue(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
-            }
-
             return $newPassword;
         } catch (Exception $e) {
             DB::rollBack();
@@ -165,10 +161,6 @@ class AlumniService
 
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
-            
-            if ($alumni->email) {
-                Mail::to($alumni->email)->queue(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
-            }
             
             return $alumni;
         } catch (Exception $e) {
