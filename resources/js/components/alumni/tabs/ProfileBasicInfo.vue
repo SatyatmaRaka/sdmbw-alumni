@@ -66,22 +66,7 @@
       </div>
     </div>
 
-    <!-- SEKSI KREDENSIAL BARU -->
-    <div class="pt-4 border-top">
-      <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i> Kredensial Login (Opsional)</h6>
-      <p class="text-muted small mb-4">Anda dapat mengubah username login di sini jika tidak ingin lagi menggunakan NISN.</p>
-      
-      <div class="row g-4">
-        <div class="col-md-12">
-          <label class="form-label fw-bold small text-muted text-uppercase">Username Baru</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light border-0 rounded-start-4"><i class="bi bi-person-badge"></i></span>
-            <input v-model="form.username" type="text" class="form-control bg-light border-0 rounded-end-4" placeholder="Min. 4 karakter">
-          </div>
-          <div class="form-text small">Username saat ini: <strong>{{ alumni.user?.username }}</strong></div>
-        </div>
-      </div>
-    </div>
+    <!-- KREDENSIAL LOGIN HILANGKAN -->
   </div>
 </template>
 

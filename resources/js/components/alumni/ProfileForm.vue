@@ -158,7 +158,6 @@ const form = reactive({
     { jenjang: 'Perguruan Tinggi', nama_instansi: '', tahun_masuk: '', tahun_lulus: '', is_ongoing: false, fakultas: '', program_studi: '' }
   ],
   pekerjaan: [],
-  username: props.alumni.user?.username || '',
   password: '',
   password_confirmation: '',
   jenjang_pendidikan_saat_ini: props.alumni.jenjang_pendidikan_saat_ini || 'SD'
@@ -227,7 +226,6 @@ const submitProfile = async () => {
   formData.append('email', form.email);
   formData.append('harapan', form.harapan);
   if (form.foto) formData.append('foto', form.foto);
-  if (form.username) formData.append('username', form.username);
   if (form.password) {
     formData.append('password', form.password);
     formData.append('password_confirmation', form.password_confirmation);

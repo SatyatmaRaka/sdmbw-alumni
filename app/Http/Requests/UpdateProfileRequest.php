@@ -61,7 +61,6 @@ class UpdateProfileRequest extends FormRequest
             'pekerjaan.*.jabatan'         => 'nullable|string|max:255',
             'pekerjaan.*.tahun_mulai'     => 'nullable|integer|digits:4',
             'pekerjaan.*.is_current'      => 'nullable|in:0,1',
-            'username'                    => 'nullable|string|min:4|max:50|unique:users,username,' . auth()->id(),
             'password'                    => 'nullable|string|min:8|confirmed',
         ];
     }

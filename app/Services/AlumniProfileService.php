@@ -35,21 +35,11 @@ class AlumniProfileService
                 'jenjang_pendidikan_saat_ini' => $data['jenjang_pendidikan_saat_ini'] ?? $alumni->jenjang_pendidikan_saat_ini,
             ]);
 
-            // 2. Update Kredensial User
-            // must_change_password hanya di-reset ke false jika profil baru pertama kali diisi
-            // (yaitu saat is_profile_complete masih false). Jika admin sudah reset password
-            // (must_change_password = true) dan user bukan first-time, flag tetap terjaga.
+            // must_change_password hanya diubah melalui fungsi updatePassword secara eksplisit.
             $userUpdateData = [];
-            if (!$alumni->is_profile_complete) {
-                // First-time onboarding: bebaskan dari wajib ganti password
-                $userUpdateData['must_change_password'] = false;
-            }
             // Synchronize email to users table as well if it was provided in the update payload
             if (array_key_exists('email', $data)) {
                 $userUpdateData['email'] = $data['email'];
-            }
-            if (!empty($data['username']) && $data['username'] !== $user->username) {
-                $userUpdateData['username'] = $data['username'];
             }
             if (!empty($userUpdateData)) {
                 $user->update($userUpdateData);

@@ -41,15 +41,14 @@ class EnsureAlumniOnboarding
                 return $next($request);
             }
 
-            $alumni = $user->alumni;
-
-            // Step 1: Wajib ganti password HANYA jika profil belum pernah dilengkapi
-            // (first-time onboarding). Jika sudah complete, password reset oleh admin
-            // tidak memblokir akses ke dashboard.
-            if ($user->must_change_password && (!$alumni || !$alumni->is_profile_complete)) {
+            // Step 1: Wajib ganti password HANYA jika must_change_password true
+            // Ini untuk mencegah akun yang diimport (password default NISN) digunakan tanpa diganti passwordnya.
+            if ($user->must_change_password) {
                 return redirect()->route('alumni.profile.edit')
-                    ->with('warning', 'Silakan lengkapi profil Anda terlebih dahulu untuk mengaktifkan akun.');
+                    ->with('warning', 'Demi keamanan, Anda WAJIB mengganti password default (NISN) Anda pada panel Keamanan Akun sebelum dapat menggunakan sistem.');
             }
+
+            $alumni = $user->alumni;
 
             // Step 2: Wajib lengkapi profil (Alamat, No HP, Minimal 1 pendidikan)
             if (!$alumni || !$alumni->is_profile_complete) {
