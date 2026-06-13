@@ -118,7 +118,6 @@ class AlumniController extends Controller
     {
         try {
             $this->alumniService->resetPassword($alumni, Auth::id());
-            // TODO: Integrasi mail - kirim notifikasi password baru dikirim via email
             return back()->with('success', "Password {$alumni->nama_lengkap} berhasil direset.");
         } catch (Exception $e) {
             return back()->with('error', 'Gagal reset password: ' . $e->getMessage());
@@ -152,7 +151,6 @@ class AlumniController extends Controller
 
         try {
             $alumni = $this->alumniService->resetPasswordByNisn($request->nisn, $request->password, Auth::id());
-            // TODO: Integrasi mail - kirim notifikasi password baru dikirim via email
             return redirect()->route('admin.alumni.resetPasswordForm')
                 ->with('success', "Password alumni NISN {$request->nisn} ({$alumni->nama_lengkap}) berhasil direset!");
         } catch (Exception $e) {

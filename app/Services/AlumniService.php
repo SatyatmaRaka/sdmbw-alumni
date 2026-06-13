@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Services\CacheService;
+use App\Mail\PasswordResetMail;
 use Exception;
 
 class AlumniService
@@ -124,7 +126,10 @@ class AlumniService
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
             
-            // TODO: Integrasi mail - kirim notifikasi berisi password baru via email
+            if ($alumni->email) {
+                Mail::to($alumni->email)->send(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
+            }
+
             return 'Password berhasil direset.';
         } catch (Exception $e) {
             DB::rollBack();
@@ -160,6 +165,10 @@ class AlumniService
 
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
+            
+            if ($alumni->email) {
+                Mail::to($alumni->email)->send(new PasswordResetMail($alumni->nama_lengkap, $alumni->user->username, $newPassword));
+            }
             
             return $alumni;
         } catch (Exception $e) {

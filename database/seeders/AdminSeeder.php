@@ -19,8 +19,8 @@ class AdminSeeder extends Seeder
         if (!$adminExists) {
             User::create([
                 'username'  => 'adminalumnibw',
-                // Password diisi sesuai yang kamu infokan di info command
-                'password'  => Hash::make('7rD7N1£Rx,Am@!u{lol_56s{6k)$|#Swh0;H!KV&'),
+                // Password diganti menjadi mudah diingat namun cukup kuat
+                'password'  => Hash::make('SdmbwAdmin#2026!'),
                 'role'      => 'admin',
                 // PENTING: Admin harus otomatis aktif agar bisa login
                 'is_active' => true,
@@ -28,7 +28,7 @@ class AdminSeeder extends Seeder
 
             $this->command->info('✅ Akun admin berhasil dibuat!');
             $this->command->info('   Username: adminalumnibw');
-            $this->command->info('   Password: 7rD7N1£Rx,Am@!u{lol_56s{6k)$|#Swh0;H!KV&');
+            $this->command->info('   Password: SdmbwAdmin#2026!');
             $this->command->info('   Status  : Aktif (Bypass Verifikasi)');
         } else {
             $this->command->warn('⚠️ Akun admin sudah ada, skip...');
