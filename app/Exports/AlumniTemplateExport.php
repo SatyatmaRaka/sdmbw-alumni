@@ -68,7 +68,7 @@ class AlumniTemplateExport implements FromCollection, WithHeadings, WithStyles, 
     {
         // Instruksi di bagian atas
         $sheet->mergeCells('A1:G1');
-        $sheet->setCellValue('A1', 'PANDUAN IMPORT DATA ALUMNI SD MUHAMMADIYAH BW');
+        $sheet->setCellValue('A1', 'PANDUAN IMPORT DATA ALUMNI SD MUHAMMADIYAH BIRRUL WALIDAIN');
         
         $sheet->mergeCells('A2:G2');
         $sheet->setCellValue('A2', '1. Jangan mengubah urutan kolom. 2. NISN wajib 10 digit. 3. Jenis Kelamin isi L atau P.');

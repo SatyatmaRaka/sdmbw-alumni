@@ -173,7 +173,7 @@ class AlumniImport implements ToCollection, WithEvents, WithChunkReading
 
                 $user = User::create([
                     'username'             => $username,
-                    'password'             => $nisn, // Tanpa Hash
+                    'password'             => \Illuminate\Support\Facades\Hash::make($nisn),
                     'role'                 => 'alumni',
                     'is_active'            => true,
                     'must_change_password' => true,

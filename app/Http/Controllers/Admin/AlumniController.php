@@ -198,12 +198,20 @@ class AlumniController extends Controller
     public function export(Request $request)
     {
         $filters = $request->only(['status', 'angkatan_id', 'complete']);
-        
+
         $timestamp = now()->format('Y-m-d_H-i-s');
-        $fileName = "Data_Alumni_{$timestamp}.xlsx";
+        $fileName  = "Data_Alumni_{$timestamp}.xlsx";
+
+        \App\Models\AdminLog::log(
+            Auth::id(),
+            \App\Models\AdminLog::ACTION_EXPORT_ALUMNI,
+            'alumni',
+            null,
+            "Export data alumni dengan filter: " . json_encode($filters)
+        );
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AlumniExport($filters), 
+            new \App\Exports\AlumniExport($filters),
             $fileName
         );
     }

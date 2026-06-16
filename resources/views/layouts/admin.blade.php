@@ -411,7 +411,7 @@
                 <i class="bi bi-mortarboard-fill"></i>
             </div>
             <h4>Sistem Alumni</h4>
-            <small>SD Muhammadiyah BW</small>
+            <small>SD Muhammadiyah Birrul Walidain</small>
         </div>
 
         <div class="nav-section-label">Manajemen</div>
