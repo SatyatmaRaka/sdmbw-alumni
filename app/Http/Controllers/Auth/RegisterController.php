@@ -33,13 +33,13 @@ class RegisterController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'angkatan_id' => 'required|exists:angkatan,id',
             'tahun_lulus' => 'required|numeric|digits:4',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|confirmed',
         ], [
             'nisn.required' => 'NISN wajib diisi.',
             'nisn.digits' => 'NISN harus 10 digit.',
             'nisn.unique' => 'NISN ini sudah terdaftar di sistem.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'password.min' => 'Password minimal 6 karakter.'
+            'password.min' => 'Password minimal 8 karakter.'
         ]);
 
         DB::beginTransaction();
@@ -47,7 +47,7 @@ class RegisterController extends Controller
             // 1. Buat User (Alumni) - nonaktif sampai disetujui admin
             $user = User::create([
                 'username' => $request->nisn,
-                'password' => $request->password, // Akan otomatis di-hash oleh model
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
                 'role' => UserRole::ALUMNI->value,
                 'is_active' => false,
                 'must_change_password' => false, // Karena mereka membuat passwordnya sendiri
