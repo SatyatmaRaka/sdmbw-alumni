@@ -174,7 +174,7 @@
             
             <p class="mb-3 fw-bold">Ketik teks berikut untuk mengonfirmasi:</p>
             <div class="bg-light p-2 text-center fw-bold text-danger mb-3 rounded border border-danger border-opacity-25 letter-spacing-1">
-              HAPUS SEMUA DATA
+              HAPUS SEMUA
             </div>
             
             <input v-model="confirmText" type="text" class="form-control rounded-3 py-2" placeholder="Ketik di sini...">
@@ -184,7 +184,7 @@
             <button 
               type="button" 
               class="btn btn-danger rounded-pill px-4 fw-bold" 
-              :disabled="confirmText !== 'HAPUS SEMUA DATA' || deletingAll"
+              :disabled="confirmText !== 'HAPUS SEMUA' || deletingAll"
               @click="executeDeleteAll"
             >
               <span v-if="deletingAll" class="spinner-border spinner-border-sm me-1"></span>
@@ -275,7 +275,7 @@ const handleDelete = (id, name) => {
 };
 
 const executeDeleteAll = () => {
-  if (confirmText.value !== 'HAPUS SEMUA DATA') return;
+  if (confirmText.value !== 'HAPUS SEMUA') return;
   
   deletingAll.value = true;
   

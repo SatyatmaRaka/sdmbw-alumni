@@ -299,10 +299,10 @@ class AlumniController extends Controller
     public function deleteAll(Request $request)
     {
         $request->validate([
-            'confirmation' => 'required|string|in:HAPUS SEMUA DATA',
+            'confirmation' => 'required|string|in:HAPUS SEMUA',
             'password'     => 'required|string',
         ], [
-            'confirmation.in'   => 'Kata konfirmasi tidak sesuai. Ketik "HAPUS SEMUA DATA" untuk melanjutkan.',
+            'confirmation.in'   => 'Kata konfirmasi tidak sesuai. Ketik "HAPUS SEMUA" untuk melanjutkan.',
             'password.required' => 'Password admin wajib diisi untuk verifikasi.',
         ]);
 
@@ -311,7 +311,7 @@ class AlumniController extends Controller
         }
 
         try {
-            $this->alumniService->deleteAllAlumni(Auth::id());
+            $this->alumniService->deleteAllAlumni(Auth::id(), $request->confirmation);
             return redirect()->route('admin.alumni.index')
                 ->with('success', 'Seluruh data alumni berhasil dihapus secara permanen.');
         } catch (Exception $e) {

@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\UserController;
 | Admin Routes (Admin Only)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'admin_only'])
+Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

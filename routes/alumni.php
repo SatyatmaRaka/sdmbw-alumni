@@ -5,6 +5,8 @@ use App\Http\Controllers\Alumni\DashboardController as AlumniDashboard;
 use App\Http\Controllers\Alumni\NotificationController;
 use App\Http\Controllers\Alumni\ProfileController;
 use App\Http\Controllers\Public\AlumniPublicController;
+use App\Http\Controllers\ForumThreadController;
+use App\Http\Controllers\ForumReplyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,3 +51,16 @@ Route::middleware(['auth', 'alumni', 'alumni.onboarding'])
             Route::get('/{alumni}', [AlumniPublicController::class, 'show'])->name('show');
         });
     });
+
+/*
+|--------------------------------------------------------------------------
+| Forum Routes (Authenticated)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'forum.auth'])->group(function () {
+    Route::get('/forum-create-thread', [ForumThreadController::class, 'create'])->name('forum.thread.create');
+    Route::post('/forum-thread', [ForumThreadController::class, 'store'])->name('forum.thread.store');
+    Route::delete('/forum-thread/{thread}', [ForumThreadController::class, 'destroy'])->name('forum.thread.destroy');
+    Route::post('/forum-thread/{thread}/reply', [ForumReplyController::class, 'store'])->name('forum.reply.store');
+    Route::delete('/forum-reply/{reply}', [ForumReplyController::class, 'destroy'])->name('forum.reply.destroy');
+});

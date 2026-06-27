@@ -17,5 +17,17 @@ class Comment extends Model
     protected $fillable = [
         'alias',
         'message',
+        'user_id',
+        'alumni_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class);
+    }
 }

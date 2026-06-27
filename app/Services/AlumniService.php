@@ -227,8 +227,12 @@ class AlumniService
     /**
      * Menghapus seluruh data alumni dari sistem secara massal (Bulk Delete).
      */
-    public function deleteAllAlumni(int $adminId): void
+    public function deleteAllAlumni(int $adminId, string $confirmationPhrase): void
     {
+        if ($confirmationPhrase !== 'HAPUS SEMUA') {
+            throw new \InvalidArgumentException('Frasa konfirmasi tidak cocok.');
+        }
+
         DB::beginTransaction();
         try {
             DB::table('alumni_pendidikan')->delete();

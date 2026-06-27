@@ -29,6 +29,7 @@ class CommentController extends Controller
         Comment::create([
             'alias'   => $randomAlias,
             'message' => $request->message,
+            'user_id' => auth()->id(),
         ]);
 
         // Hapus cache komentar landing page agar komentar baru langsung tampil
