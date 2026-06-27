@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (Schema::hasColumn('users', 'nisn')) {
+                $table->dropUnique('users_nisn_unique');
                 $table->dropColumn('nisn');
             }
         });

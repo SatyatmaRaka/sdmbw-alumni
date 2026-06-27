@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_angkatan'); // Contoh: "Angkatan 1"
             $table->string('tahun_ajaran'); // Contoh: "2016-2017"
-            $table->enum('status', ['LULUS', 'BELUM_LULUS'])->default('BELUM_LULUS');
+            $table->enum('status', ['LULUS', 'BELUM_LULUS', 'AKTIF'])->default('BELUM_LULUS');
             $table->timestamps();
         });
     }
