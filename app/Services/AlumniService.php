@@ -7,14 +7,12 @@ use App\Models\AdminLog;
 use App\Models\User;
 use App\Enums\AlumniStatus;
 use App\Enums\UserRole;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Notifications\AlumniAccountStatusNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Services\CacheService;
-use App\Mail\PasswordResetMail;
 use Exception;
 
 class AlumniService
@@ -86,6 +84,10 @@ class AlumniService
             DB::commit();
             $this->cacheService->clearAllAlumniRelated();
 
+            if (in_array($status, [AlumniStatus::VERIFIED->value, AlumniStatus::REJECTED->value], true)) {
+                $this->sendStatusNotification($alumni, $status);
+            }
+
             return match($status) {
                 AlumniStatus::VERIFIED->value => 'Alumni berhasil diverifikasi dan akun diaktifkan.',
                 AlumniStatus::REJECTED->value => 'Pendaftaran alumni berhasil ditolak dan akun dinonaktifkan.',
@@ -94,6 +96,23 @@ class AlumniService
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+    private function sendStatusNotification(Alumni $alumni, string $status): void
+    {
+        if (!$alumni->user) {
+            return;
+        }
+
+        try {
+            $alumni->user->notify(new AlumniAccountStatusNotification($status, $alumni->nama_lengkap));
+        } catch (Exception $e) {
+            Log::warning('Gagal mengirim notifikasi status akun alumni', [
+                'alumni_id' => $alumni->id,
+                'status' => $status,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

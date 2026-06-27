@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboard;
+use App\Http\Controllers\Alumni\NotificationController;
 use App\Http\Controllers\Alumni\ProfileController;
 use App\Http\Controllers\Public\AlumniPublicController;
 
@@ -37,6 +38,10 @@ Route::middleware(['auth', 'alumni', 'alumni.onboarding'])
         // Testimonial — Wajib diisi setelah profil lengkap
         Route::get('/testimonial', [ProfileController::class, 'testimonialForm'])->name('testimonial.form');
         Route::post('/testimonial', [ProfileController::class, 'storeTestimonial'])->name('testimonial.store');
+
+        // Notification routes
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
 
         // Direktori Alumni (Unified with Public Controller)
         Route::prefix('direktori')->name('direktori.')->group(function () {

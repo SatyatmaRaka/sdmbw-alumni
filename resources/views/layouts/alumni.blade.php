@@ -504,6 +504,49 @@
                     <h4>@yield('title', 'Dashboard')</h4>
                 </div>
 
+                @php
+                    $notifications = Auth::user()->notifications->take(10);
+                    $unreadNotificationsCount = Auth::user()->unreadNotifications->count();
+                @endphp
+
+                <div class="dropdown me-2">
+                    <button class="btn btn-light position-relative border-0 rounded-circle p-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell fs-5 text-primary"></i>
+                        @if($unreadNotificationsCount > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ $unreadNotificationsCount }}
+                            </span>
+                        @endif
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <strong>Notifikasi</strong>
+                            <form action="{{ route('alumni.notifications.readAll') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-primary">Tandai semua dibaca</button>
+                            </form>
+                        </div>
+                        @forelse($notifications as $notification)
+                            <div class="dropdown-item px-3 py-3 border-bottom">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <div>
+                                        <div class="fw-semibold">{{ data_get($notification, 'data.title') }}</div>
+                                        <div class="small text-muted">{{ data_get($notification, 'data.message') }}</div>
+                                        <div class="small text-secondary mt-1">{{ $notification->created_at->diffForHumans() }}</div>
+                                    </div>
+                                    @if(is_null($notification->read_at))
+                                        <button type="button" class="btn btn-link btn-sm p-0 text-primary" onclick="markRead('{{ $notification->id }}')">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="px-3 py-4 text-center text-muted small">Tidak ada notifikasi.</div>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div class="dropdown user-dropdown">
                     <div class="btn-user dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="user-info">
@@ -693,6 +736,24 @@
     </script>
 
     @stack('scripts')
+
+    <script>
+        function markRead(id) {
+            const url = "{{ route('alumni.notifications.read', ['id' => '__ID__']) }}".replace('__ID__', id);
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            }).finally(() => window.location.reload());
+        }
+    </script>
 
     {{-- PWA Service Worker Registration --}}
     <script>

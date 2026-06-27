@@ -3,21 +3,19 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AlumniAccountStatusNotification extends Notification implements ShouldQueue
+class AlumniAccountStatusNotification extends Notification
 {
     use Queueable;
 
-    public $status;
-    public $alumniName;
+    public string $status;
+    public string $alumniName;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($status, $alumniName)
+    public function __construct(string $status, string $alumniName)
     {
         $this->status = $status;
         $this->alumniName = $alumniName;
@@ -30,31 +28,28 @@ class AlumniAccountStatusNotification extends Notification implements ShouldQueu
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database'];
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Get the database representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toDatabase(object $notifiable): array
     {
         if ($this->status === 'verified') {
-            return (new MailMessage)
-                ->subject('Pemberitahuan: Akun Alumni Anda Telah Diverifikasi')
-                ->greeting('Halo ' . $this->alumniName . '!')
-                ->line('Selamat! Akun Anda di portal Alumni SD Muhammadiyah Birrul Walidain Kudus telah berhasil diverifikasi oleh Admin.')
-                ->line('Anda sekarang dapat masuk secara penuh menggunakan NISN dan berpartisipasi dalam komunitas, melengkapi direktori, serta melihat data rekan alumni lainnya.')
-                ->action('Masuk Sekarang', url('/login'))
-                ->line('Mari bersama-sama membangun jaringan yang kuat dan inspiratif!');
-        } else {
-            return (new MailMessage)
-                ->subject('Pemberitahuan: Pendaftaran Alumni Ditolak')
-                ->greeting('Mohon Maaf, ' . $this->alumniName . '.')
-                ->line('Pendaftaran Anda di portal Alumni SD Muhammadiyah Birrul Walidain Kudus tidak dapat disetujui pada saat ini.')
-                ->line('Hal ini biasanya dikarenakan oleh ketidaksesuaian data yang Anda berikan dengan catatan sistem kami (misalnya: NISN atau Angkatan yang salah).')
-                ->line('Silakan hubungi Admin Sekolah untuk informasi lebih lanjut atau klarifikasi data Anda.')
-                ->action('Hubungi Admin (WhatsApp)', 'https://wa.me/6281248076886')
-                ->line('Terima kasih atas pengertiannya.');
+            return [
+                'type' => 'account_status',
+                'title' => 'Akun Anda Telah Diverifikasi',
+                'message' => "Halo {$this->alumniName}, akun Anda telah diverifikasi. Silakan masuk untuk melanjutkan.",
+                'icon' => 'success',
+            ];
         }
+
+        return [
+            'type' => 'account_status',
+            'title' => 'Pendaftaran Tidak Disetujui',
+            'message' => "Halo {$this->alumniName}, pendaftaran Anda tidak disetujui. Silakan hubungi admin untuk informasi lebih lanjut.",
+            'icon' => 'danger',
+        ];
     }
 }
